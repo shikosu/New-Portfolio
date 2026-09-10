@@ -59,19 +59,25 @@ Aucune ligne de code. C'est la phase que tout le monde saute et qui coûte trois
 
 ## Phase 2 — Socle technique · ~3 jours
 
-- [ ] Projet créé, toutes les dépendances de SETUP.md installées
-- [ ] `npm run check` passe au vert
-- [ ] Arborescence `src/` en place (dossiers vides acceptés)
-- [ ] `lib/gsap.ts` : enregistrement centralisé des plugins
-- [ ] `lib/lenis.ts` : instance unique + synchro `ScrollTrigger.update`
-- [ ] `lib/motion.ts` : constantes `DUR` / `EASE` / `STAGGER`
-- [ ] `hooks/usePrefersReducedMotion.ts` fonctionnel
-- [ ] Routes vides mais navigables
-- [ ] Git initialisé, `.gitignore` correct, premier commit
-- [ ] Déploiement automatique branché (Vercel / Netlify / Cloudflare Pages)
+- [x] Projet créé, toutes les dépendances de SETUP.md installées
+- [x] `npm run check` passe au vert
+- [x] Arborescence `src/` en place (dossiers vides acceptés)
+- [x] `lib/gsap.ts` : enregistrement centralisé des plugins
+- [x] `lib/lenis.ts` : instance unique + synchro `ScrollTrigger.update`
+- [x] `lib/motion.ts` : constantes `DUR` / `EASE` / `STAGGER`
+- [x] `hooks/usePrefersReducedMotion.ts` fonctionnel
+- [x] Routes vides mais navigables
+- [x] Git initialisé, `.gitignore` correct, premier commit
+- [~] Déploiement automatique branché — **auto-hébergé sur le Raspberry Pi**, pas chez un hébergeur.
+      Chaîne écrite et prête : `Dockerfile` (arm64 sans émulation), `deploy/nginx.conf`,
+      `.github/workflows/deploiement.yml` (GHCR), `deploy/docker-compose.pi.yml` (+ Watchtower).
+      **Reste à faire par moi**, marche à suivre dans `DEPLOIEMENT.md` : créer le dépôt GitHub
+      et pousser, rendre le paquet GHCR public, démarrer le compose sur le Pi, ajouter le nom
+      d'hôte `v4.teovidal.eu` au tunnel Cloudflare.
 
 **Critères de sortie**
-✅ Une URL publique affiche 4 pages blanches navigables.
+✅ Une URL publique affiche 4 pages blanches navigables. → cible : `v4.teovidal.eu`.
+`teovidal.eu` continue de servir l'ancien portfolio ; la bascule est prévue fin de phase 5.
 ✅ Le scroll est lissé par Lenis sur toutes les pages.
 ✅ Le test du carré cuivré (§8 de SETUP.md) fonctionne.
 
@@ -181,7 +187,7 @@ Tout le détail est dans **QUALITY.md**. Résumé des portes :
 |---|---|---|---|
 | P0 Cadrage | 2026-09-10 | 2026-09-10 | Concept réorienté : ligne de fab au lieu du circuit imprimé. CLAUDE.md §1, §2, §8, §10 réécrits. Carte contenu figée dans `CONTENU.md`. Reste le critère oral. |
 | P1 Prototype | 2026-09-10 | 2026-09-10 | Close. `scrub: 0.3`, `ease: "none"`, 60 fps / pire image 17 ms. Décisions reportées au §7 du CLAUDE.md. Les deux fichiers de `proto/` sont jetables : ils meurent en phase 2. |
-| P2 Socle | | | |
+| P2 Socle | 2026-09-10 | | Vite 8 + React 19.2 + TS 6 strict + Tailwind v4. `npm run check` vert, test du carré validé (GSAP + useGSAP + alias + Tailwind). Premier commit fait. Reste le branchement effectif du Pi. |
 | P3 Rail | | | |
 | P4 Circuit | | | |
 | P5 Transitions | | | |

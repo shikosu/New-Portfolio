@@ -44,7 +44,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import svgr from "vite-plugin-svgr";
-import path from "node:path";
+import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
   plugins: [
@@ -54,7 +54,9 @@ export default defineConfig({
   ],
   resolve: {
     // 4. alias "@" → src/ : évite les ../../../ illisibles
-    alias: { "@": path.resolve(__dirname, "./src") },
+    // ⚠️ `__dirname` n'existe PAS ici : le projet est en ESM ("type": "module")
+    //    dans package.json. Utiliser import.meta.url, sinon Vite refuse de démarrer.
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
 });
 ```
@@ -65,15 +67,21 @@ export default defineConfig({
 @import "tailwindcss";
 
 @theme {
-  --color-mask:   #0B2E23;
-  --color-copper: #B87333;
-  --color-enig:   #D4AF6A;
-  --color-silk:   #E8EDE9;
+  --color-ground:   #FAFAF8;  /* quartz — le fond */
+  --color-ground-2: #F2F2EE;  /* meme fond, en retrait */
+  --color-ink:      #111110;  /* chrome — la piste et le texte */
+  --color-ink-soft: #6A6A63;  /* texte secondaire */
+  --color-rule:     #DCDCD5;  /* filets — decoratif uniquement */
+  --color-litho:    #E8B923;  /* jaune salle blanche — fond de pastille seul */
 
   --font-display: "Chakra Petch", sans-serif;
   --font-mono:    "IBM Plex Mono", monospace;
 }
 ```
+
+> La palette complete, avec l'echelle typographique et les contrastes mesures,
+> est au §10 du CLAUDE.md. Le fichier reel du projet (`src/styles/index.css`) la
+> reprend integralement.
 
 Le bloc `@theme` remplace l'ancien `theme.extend` du fichier de config. Chaque variable devient automatiquement une classe utilitaire : `--color-copper` te donne `bg-copper`, `text-copper`, `border-copper`.
 
@@ -109,6 +117,12 @@ Bibliothèque de moins de 4 ko, en licence MIT, développée par Darkroom Engine
 
 ## Étape 5 — Le reste des dépendances
 
+> ⚠️ **Le linter est `oxlint`, pas ESLint.** Le template Vite actuel l'installe par défaut :
+> même travail, écrit en Rust, quasi instantané. Ne pas installer `eslint-config-prettier`,
+> il ne servirait à rien. La configuration vit dans `.oxlintrc.json`, où `no-console` et
+> `no-debugger` sont passés en `error` — c'est ce qui empêche un `console.log` de finir en
+> production.
+
 ```bash
 # Routage (SPA multi-pages)
 npm install react-router
@@ -119,8 +133,8 @@ npm install @fontsource/chakra-petch @fontsource/ibm-plex-mono
 # SVG comme composants React
 npm install -D vite-plugin-svgr
 
-# Qualité de code
-npm install -D prettier eslint-config-prettier
+# Qualité de code (oxlint est déjà là, fourni par le template)
+npm install -D prettier
 
 # Analyse de la taille du bundle
 npm install -D rollup-plugin-visualizer
@@ -138,8 +152,8 @@ Dans `package.json`, remplace la section `scripts` :
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc -b --noEmit",
+    "lint": "oxlint --max-warnings 0",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\"",
     "check": "npm run typecheck && npm run lint && npm run build",
     "analyze": "vite build && open dist/stats.html"
@@ -149,19 +163,22 @@ Dans `package.json`, remplace la section `scripts` :
 
 `--max-warnings 0` : un avertissement bloque la commande. C'est volontairement sévère — c'est ce qui empêche les `console.log` et les `markers: true` de finir en production.
 
-**`tsconfig.json`** — active le mode strict et l'alias :
+**`tsconfig.app.json`** (et non `tsconfig.json`, qui n'est qu'un fichier de références) —
+active le mode strict et l'alias :
 
 ```jsonc
 {
   "compilerOptions": {
-    "strict": true,
+    "strict": true,          // ⚠️ ABSENT du template : à ajouter à la main
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "baseUrl": ".",
     "paths": { "@/*": ["./src/*"] }
   }
 }
 ```
+
+> ⚠️ **Pas de `baseUrl`.** Il est déprécié en TypeScript 6 (erreur TS5101 au build) et
+> inutile depuis TS 5 : les chemins de `paths` se résolvent relativement au tsconfig.
 
 ---
 
@@ -169,31 +186,38 @@ Dans `package.json`, remplace la section `scripts` :
 
 | Outil | Usage sur ce projet | Où |
 |---|---|---|
-| **KiCad** | Router un vrai circuit, exporter la couche cuivre en SVG → c'est ton tracé animé | kicad.org |
+| **Inkscape** | Dessiner et corriger les 12 figures de procédé, export « SVG optimisé » | inkscape.org |
 | **Figma** | Storyboard et maquettes de la phase 0 | figma.com |
-| **SVGOMG** | Nettoyer les SVG exportés (KiCad produit du code très verbeux) | jakearchibald.github.io/svgomg |
+| **SVGOMG** | Nettoyer les SVG exportés avant intégration | jakearchibald.github.io/svgomg |
 | **Extension React DevTools** | Voir les re-rendus qui tuent la perf | Chrome Web Store |
 | **Lighthouse** (intégré à Chrome) | Audit perf / a11y / SEO | DevTools → onglet Lighthouse |
 
-### Le pipeline KiCad → site
+### Le pipeline figure → site
+
+> ⚠️ **KiCad n'a plus rien à faire ici.** Le concept « circuit imprimé » est abandonné
+> (CLAUDE.md §1). Les 12 figures sont des **schémas de procédé** dessinés à la main sous
+> Inkscape, pas des routages de cuivre exportés.
 
 ```
-KiCad (routage)
-      │  Fichier → Tracer → format SVG, couche F.Cu uniquement
+Inkscape (dessin)
+      │  Fichier → Enregistrer sous → « SVG optimisé »
       ▼
-fichier.svg  (verbeux, ~200 ko)
-      │  SVGOMG : supprimer métadonnées, arrondir les décimales à 2
+figure.svg
+      │  vérifier dans un éditeur de texte : fill="none" + stroke="..."
+      │  ⚠️ JAMAIS « Contour en chemin » : ça transforme le trait en forme
+      │     remplie et casse DrawSVG définitivement
       ▼
-fichier.min.svg  (~15 ko)
-      │  ⚠️ vérifier : fill="none" + stroke="..." sur les paths
-      │     (DrawSVG anime le CONTOUR, pas le remplissage)
+src/assets/process/07-photolithographie.svg
+      │
       ▼
-src/assets/circuits/ → import Circuit from "@/assets/circuits/parcours.svg?react"
+import Figure from "@/assets/process/07-photolithographie.svg?react";
 ```
 
-Le `?react` en fin d'import est la syntaxe de `vite-plugin-svgr` : il te renvoie un composant React au lieu d'une URL, ce qui te permet d'atteindre chaque `<path>` avec GSAP.
+Le `?react` en fin d'import est la syntaxe de `vite-plugin-svgr` : il renvoie un composant
+React au lieu d'une URL, ce qui permet d'atteindre chaque `<path>` avec GSAP.
 
----
+Les contraintes de fabrication du fichier sont au **§8 du CLAUDE.md** — notamment les trois
+éléments en tirets qu'il ne faut pas animer avec DrawSVG.
 
 ## Étape 8 — Vérification de l'installation
 
@@ -217,10 +241,10 @@ export default function App() {
     gsap.to(box.current, { x: 300, duration: 0.8, ease: "power2.out" });
   }, { scope: box });
 
-  return <div ref={box} className="size-24 bg-copper" />;
+  return <div ref={box} className="size-24 bg-ink" />;
 }
 ```
 
-Si le carré cuivré traverse l'écran : Vite, React, TypeScript, Tailwind v4, GSAP et `useGSAP` fonctionnent tous ensemble. Tu peux passer à la ROADMAP.
+Si le carré noir traverse l'écran : Vite, React, TypeScript, Tailwind v4, GSAP et `useGSAP` fonctionnent tous ensemble. Tu peux passer à la ROADMAP.
 
 Si rien ne bouge, vérifie dans cet ordre : (1) `lib/gsap.ts` existe et exporte bien, (2) l'alias `@` est déclaré **à la fois** dans `vite.config.ts` et `tsconfig.json` — c'est l'oubli le plus fréquent.
