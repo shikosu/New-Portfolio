@@ -1,0 +1,30 @@
+# dependances
+node_modules/
+
+# sorties de build
+dist/
+dist-ssr/
+*.local
+
+# caches d'outils
+node_modules/.tmp/
+*.tsbuildinfo
+
+# systeme
+.DS_Store
+
+# editeurs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# environnement
+.env
+.env.*
+!.env.example
+
+# journaux
+logs/
+*.log
+npm-debug.log*

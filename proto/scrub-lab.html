@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+  <meta charset="utf-8">
+  <title>Proto — banc d'essai scrub / ease / fps</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0; padding: 0;
+      background: #1c1c1c; color: #d0d0d0;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    }
+
+    /* --- le rail, identique a rail.html --------------------------- */
+    #rail   { position: relative; height: 100vh; overflow: hidden; }
+    #track  { position: relative; display: flex; width: 300vw; height: 100vh; will-change: transform; }
+
+    .panel {
+      flex: 0 0 100vw; height: 100vh;
+      display: grid; place-items: center;
+      font-size: 22vmin; font-weight: 700; color: #6a6a6a;
+      border-right: 1px dashed #4a4a4a;
+    }
+    .panel:nth-child(1) { background: #262626; }
+    .panel:nth-child(2) { background: #303030; }
+    .panel:nth-child(3) { background: #3a3a3a; }
+
+    #circuit  { position: absolute; top: 0; left: 0; width: 300vw; height: 100vh; pointer-events: none; }
+    #piste    { fill: none; stroke: #8f8f8f; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+    #electron { fill: #f0f0f0; }
+
+    /* --- le pupitre de mesure, en surimpression ------------------- */
+    #hud {
+      position: fixed; top: 12px; left: 12px; z-index: 999;
+      background: #111; border: 1px solid #444;
+      padding: 12px 14px; font-size: 12px; line-height: 1.55;
+      width: 310px;
+    }
+    #hud h1 { font-size: 12px; margin: 0 0 8px; color: #f0f0f0; letter-spacing: .06em; }
+    #hud .grp { margin: 10px 0 6px; color: #7a7a7a; }
+    #hud button {
+      font: inherit; background: #222; color: #c0c0c0;
+      border: 1px solid #555; padding: 3px 9px; margin: 0 3px 3px 0; cursor: pointer;
+    }
+    #hud button.on { background: #d8d8d8; color: #111; border-color: #d8d8d8; }
+    #hud table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    #hud td { padding: 2px 0; }
+    #hud td:last-child { text-align: right; color: #f0f0f0; }
+    #hud .warn { color: #e0a020; }
+    #hud .bad  { color: #e05050; }
+    #courbe { display: block; margin-top: 8px; background: #0a0a0a; border: 1px solid #333; }
+    #note { color: #7a7a7a; margin-top: 8px; font-size: 11px; line-height: 1.5; }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       PUPITRE — tout se pilote d'ici, sans rouvrir le fichier
+       ============================================================ -->
+  <div id="hud">
+    <h1>BANC D'ESSAI — SCRUB</h1>
+
+    <div class="grp">scrub</div>
+    <div id="btn-scrub"></div>
+
+    <div class="grp">ease du rail</div>
+    <div id="btn-ease"></div>
+
+    <div class="grp">reperes</div>
+    <div id="btn-marq"></div>
+
+    <table>
+      <tr><td>images / s</td>            <td id="m-fps">—</td></tr>
+      <tr><td>pire image (ms)</td>       <td id="m-pire">—</td></tr>
+      <tr><td>1· molette</td>            <td id="m-scroll">—</td></tr>
+      <tr><td>2· apres scrub</td>        <td id="m-anim">—</td></tr>
+      <tr><td>3· apres ease</td>         <td id="m-reel">—</td></tr>
+      <tr><td>retard a l'ecran</td>      <td id="m-ecart">—</td></tr>
+    </table>
+
+    <canvas id="courbe" width="282" height="140"></canvas>
+
+    <div id="note">
+      Axe X = molette · Axe Y = position reelle du track.<br>
+      La diagonale = synchronisation parfaite.
+    </div>
+  </div>
+
+  <!-- ============================================================
+       STRUCTURE (identique a rail.html)
+       ============================================================ -->
+  <section id="rail">
+    <div id="track">
+      <section class="panel">1</section>
+      <section class="panel">2</section>
+      <section class="panel">3</section>
+
+      <svg id="circuit" viewBox="0 0 3000 1000" preserveAspectRatio="none">
+        <path id="piste" d="M 150 500
+                 L 700 500
+                 L 900 280
+                 L 1500 280
+                 L 1700 720
+                 L 2350 720
+                 L 2550 500
+                 L 2850 500" />
+        <circle id="electron" cx="0" cy="0" r="14" />
+      </svg>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/MotionPathPlugin.min.js"></script>
+
+  <script>
+    // =====================================================================
+    // BLOC 0 — Plugins, references DOM, etat des reglages
+    // =====================================================================
+    gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, MotionPathPlugin);
+
+    const rail    = document.querySelector("#rail");
+    const track   = document.querySelector("#track");
+    const circuit = document.querySelector("#circuit");
+    const panels  = gsap.utils.toArray(".panel");
+    const N       = panels.length;                 // 3
+
+    // Course horizontale totale du track, en pourcentage de sa propre largeur.
+    // C'est la valeur de reference pour normaliser la position lue plus bas.
+    const COURSE_PC = -100 * (N - 1) / N;          // -66.667 %
+
+    // Les trois reglages pilotables depuis le pupitre.
+    const reglage = { scrub: true, ease: "none", marqueurs: false };
+
+    let railTween = null;   // reference vers l'anime du rail, refaite a chaque build
+
+
+    // =====================================================================
+    // BLOC 1 — (Re)construction complete du rail
+    //
+    // On ne peut pas changer `scrub` ou `ease` sur un ScrollTrigger deja
+    // cree : ces valeurs sont lues une seule fois, a la construction.
+    // Donc on detruit tout et on rebatit. C'est brutal, c'est un proto.
+    // =====================================================================
+    function construire() {
+
+      // 1a. Tout detruire. kill(true) = "revert" : les styles poses par GSAP
+      //     sont retires et le pin-spacer insere par le pin est demonte.
+      ScrollTrigger.getAll().forEach(st => st.kill(true));
+      gsap.killTweensOf([track, "#piste", "#electron"]);
+      gsap.set(track, { clearProps: "transform" });
+
+      // 1b. On repart du haut : la course change, garder l'ancienne position
+      //     de scroll donnerait des mesures fausses pendant quelques images.
+      window.scrollTo(0, 0);
+
+      // 1c. Le rail lui-meme : scroll VERTICAL -> translation HORIZONTALE.
+      railTween = gsap.to(track, {
+        xPercent: COURSE_PC,
+        ease: reglage.ease,                 // <-- le reglage n°2
+        scrollTrigger: {
+          trigger: rail,
+          start: "top top",
+          end: () => "+=" + (track.offsetWidth - window.innerWidth),
+          pin: true,
+          scrub: reglage.scrub,             // <-- le reglage n°1
+          invalidateOnRefresh: true,
+          markers: reglage.marqueurs,
+          id: "rail"
+        }
+      });
+
+      // 1d. La piste, mesuree DANS le defilement horizontal.
+      //     containerAnimation : le declencheur est un element qui se
+      //     deplace avec le track, et les mots-cles passent sur l'axe X
+      //     ("left left" et non "top top").
+      gsap.fromTo("#piste",
+        { drawSVG: "0%" },
+        {
+          drawSVG: "100%",
+          ease: "none",
+          scrollTrigger: {
+            trigger: circuit,
+            start: "left left",
+            end: "right right",
+            containerAnimation: railTween,
+            scrub: reglage.scrub,
+            markers: reglage.marqueurs,
+            id: "piste"
+          }
+        }
+      );
+
+      // 1e. L'electron : boucle libre, aucun lien avec le scroll.
+      gsap.to("#electron", {
+        motionPath: { path: "#piste", align: "#piste", alignOrigin: [0.5, 0.5], autoRotate: false },
+        duration: 6, ease: "none", repeat: -1
+      });
+
+      ScrollTrigger.refresh();
+      trace.length = 0;                     // on vide la courbe du reglage precedent
+    }
+
+
+    // =====================================================================
+    // BLOC 2 — Le pupitre : trois rangees de boutons
+    // =====================================================================
+    function rangee(hote, choix, cle) {
+      hote.innerHTML = "";
+      choix.forEach(([libelle, valeur]) => {
+        const b = document.createElement("button");
+        b.textContent = libelle;
+        b.onclick = () => { reglage[cle] = valeur; construire(); peindreBoutons(); };
+        b.dataset.val = JSON.stringify(valeur);
+        hote.appendChild(b);
+      });
+    }
+
+    function peindreBoutons() {
+      document.querySelectorAll("#hud button").forEach(b => {
+        const cle = b.parentElement.id.replace("btn-", "");
+        const map = { scrub: "scrub", ease: "ease", marq: "marqueurs" }[cle];
+        b.classList.toggle("on", b.dataset.val === JSON.stringify(reglage[map]));
+      });
+    }
+
+    rangee(document.querySelector("#btn-scrub"),
+           [["true", true], ["0.3", 0.3], ["1", 1], ["2", 2]], "scrub");
+
+    rangee(document.querySelector("#btn-ease"),
+           [["none", "none"], ["power2.inOut", "power2.inOut"], ["power4.out", "power4.out"]], "ease");
+
+    rangee(document.querySelector("#btn-marq"),
+           [["off", false], ["on", true]], "marqueurs");
+
+
+    // =====================================================================
+    // BLOC 3 — Les mesures, rafraichies a chaque image
+    //
+    // Trois progressions differentes, et c'est tout l'interet du banc :
+    //
+    //   1. molette      = ou en est le SCROLL              (st.progress)
+    //   2. apres scrub  = ou en est le TEMPS de l'anime    (tween.progress)
+    //   3. apres ease   = ou en est la POSITION a l'ecran  (xPercent lu)
+    //
+    //   1 -> 2 : l'ecart vient du SCRUB   (retard de rattrapage)
+    //   2 -> 3 : l'ecart vient de l'EASE  (deformation du temps)
+    // =====================================================================
+    const el = {
+      fps:   document.querySelector("#m-fps"),
+      pire:  document.querySelector("#m-pire"),
+      scrl:  document.querySelector("#m-scroll"),
+      anim:  document.querySelector("#m-anim"),
+      reel:  document.querySelector("#m-reel"),
+      ecart: document.querySelector("#m-ecart")
+    };
+
+    const ctx   = document.querySelector("#courbe").getContext("2d");
+    const trace = [];              // historique des couples (molette, position reelle)
+
+    let dernier = performance.now();
+    let cumul = 0, images = 0, pire = 0;
+
+    function boucle(t) {
+      // --- 3a. images par seconde, moyennees sur ~250 ms ---------------
+      const dt = t - dernier;
+      dernier = t;
+      cumul += dt; images++;
+      if (dt > pire) pire = dt;
+
+      if (cumul >= 250) {
+        const fps = Math.round(1000 / (cumul / images));
+        el.fps.textContent  = fps;
+        el.fps.className    = fps >= 55 ? "" : (fps >= 40 ? "warn" : "bad");
+        el.pire.textContent = pire.toFixed(1);
+        el.pire.className   = pire <= 20 ? "" : (pire <= 34 ? "warn" : "bad");
+        cumul = 0; images = 0; pire = 0;
+      }
+
+      // --- 3b. les trois progressions ----------------------------------
+      const st = railTween && railTween.scrollTrigger;
+      if (st) {
+        const molette = st.progress;                              // 1
+        const temps   = railTween.progress();                     // 2
+        const reelle  = gsap.getProperty(track, "xPercent") / COURSE_PC;  // 3
+
+        const course  = track.offsetWidth - window.innerWidth;    // en px
+        const retard  = (molette - reelle) * course;
+
+        el.scrl.textContent  = (molette * 100).toFixed(1) + " %";
+        el.anim.textContent  = (temps   * 100).toFixed(1) + " %";
+        el.reel.textContent  = (reelle  * 100).toFixed(1) + " %";
+        el.ecart.textContent = Math.round(retard) + " px";
+        el.ecart.className   = Math.abs(retard) < 30 ? "" : (Math.abs(retard) < 200 ? "warn" : "bad");
+
+        // --- 3c. la courbe : X = molette, Y = position reelle ----------
+        trace.push([molette, reelle]);
+        if (trace.length > 400) trace.shift();
+        peindreCourbe();
+      }
+
+      requestAnimationFrame(boucle);
+    }
+
+    function peindreCourbe() {
+      const W = 282, H = 140, m = 8;
+      ctx.clearRect(0, 0, W, H);
+
+      // diagonale de reference = synchronisation parfaite
+      ctx.strokeStyle = "#3a3a3a"; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(m, H - m); ctx.lineTo(W - m, m);
+      ctx.stroke();
+
+      // la trace mesuree
+      ctx.strokeStyle = "#e0a020"; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      trace.forEach(([x, y], i) => {
+        const px = m + x * (W - 2 * m);
+        const py = (H - m) - y * (H - 2 * m);
+        i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+      });
+      ctx.stroke();
+
+      // le point courant
+      if (trace.length) {
+        const [x, y] = trace[trace.length - 1];
+        ctx.fillStyle = "#f0f0f0";
+        ctx.beginPath();
+        ctx.arc(m + x * (W - 2 * m), (H - m) - y * (H - 2 * m), 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+
+    // =====================================================================
+    // BLOC 4 — Demarrage
+    // =====================================================================
+    construire();
+    peindreBoutons();
+    requestAnimationFrame(boucle);
+  </script>
+
+</body>
+
+</html>

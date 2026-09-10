@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.github
+proto
+*.md
+!package.json
+Claude outputs
+.DS_Store

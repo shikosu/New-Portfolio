@@ -1,0 +1,35 @@
+# =====================================================================
+# A COPIER SUR LE RASPBERRY PI (pas utilise en developpement).
+# Emplacement conseille : /home/shikosu/mon-cloud/irchi/
+#   docker compose -f docker-compose.pi.yml up -d
+# =====================================================================
+
+services:
+  irchi:
+    # <-- REMPLACER par le nom exact affiche par GitHub, en minuscules
+    image: ghcr.io/shikosu/portfolio:latest
+    container_name: irchi-v4
+    restart: unless-stopped
+    ports:
+      # 8082 cote Pi -> 80 dans le conteneur.
+      # C'est ce port que le tunnel Cloudflare doit viser.
+      # A changer s'il est deja pris par un autre service.
+      - "8082:80"
+    labels:
+      # Seuls les conteneurs portant ce label sont mis a jour par Watchtower.
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  # -------------------------------------------------------------------
+  # C'est LUI qui rend le deploiement automatique : il interroge GHCR
+  # toutes les 5 minutes, et des qu'une nouvelle image `latest` existe,
+  # il la telecharge et redemarre le conteneur. Aucun port ouvert sur ta
+  # box, aucune cle SSH a sortir : c'est le Pi qui va chercher, jamais
+  # GitHub qui pousse.
+  # -------------------------------------------------------------------
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 300 --cleanup --label-enable

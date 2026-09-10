@@ -1,0 +1,99 @@
+@import "tailwindcss";
+@import "./fonts.css";
+
+/* ---------------------------------------------------------------------
+   Tailwind v4 : la configuration se fait ICI, en CSS. Pas de
+   tailwind.config.js. Chaque variable declaree dans @theme devient
+   automatiquement une classe utilitaire :
+     --color-ink   -> bg-ink, text-ink, border-ink
+     --text-body   -> text-body
+   --------------------------------------------------------------------- */
+@theme {
+  /* --- Palette (CLAUDE.md §10) — contrastes mesures, pas estimes ------
+     ink sur ground .......... 18,08:1
+     ink-soft sur ground ......  5,21:1
+     ink-soft sur ground-2 ....  4,85:1  <- sans marge, a reverifier si
+                                            ground-2 est un jour assombri
+     litho comme texte ........  1,76:1  <- ECHOUE, jamais de texte dessus
+     -------------------------------------------------------------------- */
+  --color-ground: #fafaf8; /* quartz — le fond */
+  --color-ground-2: #f2f2ee; /* meme fond, en retrait */
+  --color-ink: #111110; /* chrome — la piste et le texte */
+  --color-ink-soft: #6a6a63; /* texte secondaire */
+  --color-rule: #dcdcd5; /* filets — DECORATIF UNIQUEMENT (1,32:1) */
+  --color-litho: #e8b923; /* jaune salle blanche — fond de pastille seul */
+
+  /* --- Familles ------------------------------------------------------ */
+  --font-display: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* --- Echelle typographique (CLAUDE.md §10) -------------------------
+     Les ecarts s'elargissent vers le haut (x1,17 puis x1,21, x1,29, x1,45) :
+     en petit l'oeil distingue des ecarts fins, en grand il faut des sauts
+     francs. Interlignage et approche sont attaches a la taille, ce qui
+     evite d'avoir a les reappliquer a la main a chaque usage.
+     ------------------------------------------------------------------- */
+  --text-mono: 0.75rem; /* 12 px — reperes, unites, libelles d'etape */
+  --text-mono--line-height: 1.4;
+  --text-mono--letter-spacing: 0.08em;
+  --text-mono--font-weight: 500;
+
+  --text-small: 0.875rem; /* 14 px — legendes, notes */
+  --text-small--line-height: 1.5;
+
+  --text-body: 1.0625rem; /* 17 px — corps de texte */
+  --text-body--line-height: 1.6;
+
+  --text-lead: 1.375rem; /* 22 px — chapo, entree de bloc */
+  --text-lead--line-height: 1.4;
+
+  --text-title: 2rem; /* 32 px — titre de bloc */
+  --text-title--line-height: 1.15;
+  --text-title--letter-spacing: -0.01em;
+  --text-title--font-weight: 700;
+
+  --text-display: clamp(2.75rem, 6vw, 4.5rem); /* 44 -> 72 px — titre de page */
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.02em;
+  --text-display--font-weight: 700;
+}
+
+/* ---------------------------------------------------------------------
+   Base. Volontairement minimal : le style vit dans les composants.
+   --------------------------------------------------------------------- */
+@layer base {
+  html {
+    /* Lenis pilote le defilement : on desactive celui du navigateur pour
+       eviter que les deux se disputent la meme position. */
+    scroll-behavior: auto;
+  }
+
+  body {
+    background-color: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-display);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Focus visible obligatoire (CLAUDE.md §9.2) : jamais d'outline:none
+     sans remplacement. */
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+
+  /* Filet de securite systeme : si l'utilisateur demande moins
+     d'animations, plus rien ne bouge, meme si un composant oublie
+     d'appeler usePrefersReducedMotion. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

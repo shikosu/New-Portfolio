@@ -1,0 +1,8 @@
+/* Quatre fichiers de police, pas un de plus (CLAUDE.md §10).
+   Auto-heberges : aucune requete vers un CDN tiers.
+   Sous-ensemble "latin" uniquement : @fontsource livre par defaut le thai,
+   le cyrillique et le vietnamien. Mesure : CSS de 24,5 ko -> 10,9 ko. */
+@import "@fontsource/chakra-petch/latin-400.css";
+@import "@fontsource/chakra-petch/latin-700.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
