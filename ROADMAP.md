@@ -68,12 +68,16 @@ Aucune ligne de code. C'est la phase que tout le monde saute et qui coûte trois
 - [x] `hooks/usePrefersReducedMotion.ts` fonctionnel
 - [x] Routes vides mais navigables
 - [x] Git initialisé, `.gitignore` correct, premier commit
-- [~] Déploiement automatique branché — **auto-hébergé sur le Raspberry Pi**, pas chez un hébergeur.
+- [x] Déploiement automatique branché — **auto-hébergé sur le Raspberry Pi**, pas chez un hébergeur.
       Chaîne écrite et prête : `Dockerfile` (arm64 sans émulation), `deploy/nginx.conf`,
       `.github/workflows/deploiement.yml` (GHCR), `deploy/docker-compose.pi.yml` (+ Watchtower).
-      **Reste à faire par moi**, marche à suivre dans `DEPLOIEMENT.md` : créer le dépôt GitHub
-      et pousser, rendre le paquet GHCR public, démarrer le compose sur le Pi, ajouter le nom
-      d'hôte `v4.teovidal.eu` au tunnel Cloudflare.
+      **En ligne depuis le 2026-09-11 sur `v4.teovidal.eu`.** Dépôt `shikosu/New-Portfolio`,
+      image `ghcr.io/shikosu/new-portfolio`, workflow vert en 57 s (preuve que le build n'est
+      pas émulé). Accès direct à `/experience` vérifié depuis l'extérieur : le `try_files`
+      de Nginx répond correctement.
+- [ ] **Dernier contrôle, pas encore fait** : vérifier que Watchtower déploie bien tout seul.
+      Modifier un texte, pousser, ne toucher à rien, et regarder si le changement arrive
+      (~1 min pour Actions, jusqu'à 5 min pour Watchtower).
 
 **Critères de sortie**
 ✅ Une URL publique affiche 4 pages blanches navigables. → cible : `v4.teovidal.eu`.
@@ -153,6 +157,12 @@ L'effet signature. C'est ici que le site devient le tien.
 - [ ] Contact : e-mail, GitHub, LinkedIn, CV en PDF
 - [ ] Images de projets optimisées (WebP ou AVIF, dimensions correctes, `loading="lazy"`)
 - [ ] Métadonnées : `<title>`, description, image Open Graph
+- [ ] **Décider du rendu sans JavaScript.** Constaté en phase 2 : la page brute servie par
+      Nginx ne contient que les `<meta>` et un `<div id="root">` vide — tout le contenu est
+      fabriqué par React côté navigateur. Le §9.4 du CLAUDE.md n'exige que la survie *sans
+      animation*, donc ce n'est pas une violation ; mais pour le SEO ≥ 95 visé ici, il faudra
+      soit se contenter des métadonnées (Google exécute le JS), soit pré-générer le HTML des
+      4 pages au build (`vite-plugin-prerender` ou équivalent). À trancher ici, pas avant.
 
 **Critères de sortie**
 ✅ Zéro Lorem ipsum dans le dépôt.
@@ -187,7 +197,7 @@ Tout le détail est dans **QUALITY.md**. Résumé des portes :
 |---|---|---|---|
 | P0 Cadrage | 2026-09-10 | 2026-09-10 | Concept réorienté : ligne de fab au lieu du circuit imprimé. CLAUDE.md §1, §2, §8, §10 réécrits. Carte contenu figée dans `CONTENU.md`. Reste le critère oral. |
 | P1 Prototype | 2026-09-10 | 2026-09-10 | Close. `scrub: 0.3`, `ease: "none"`, 60 fps / pire image 17 ms. Décisions reportées au §7 du CLAUDE.md. Les deux fichiers de `proto/` sont jetables : ils meurent en phase 2. |
-| P2 Socle | 2026-09-10 | | Vite 8 + React 19.2 + TS 6 strict + Tailwind v4. `npm run check` vert, test du carré validé (GSAP + useGSAP + alias + Tailwind). Premier commit fait. Reste le branchement effectif du Pi. |
+| P2 Socle | 2026-09-10 | 2026-09-11 | Vite 8 + React 19.2 + TS 6 strict + Tailwind v4. `npm run check` vert, test du carré validé. En ligne sur `v4.teovidal.eu` (Pi 5, Docker/GHCR/Watchtower, tunnel Cloudflare). Reste à confirmer le déploiement automatique de bout en bout. |
 | P3 Rail | | | |
 | P4 Circuit | | | |
 | P5 Transitions | | | |
