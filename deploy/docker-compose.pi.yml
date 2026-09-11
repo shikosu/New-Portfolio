@@ -6,8 +6,9 @@
 
 services:
   irchi:
-    # <-- REMPLACER par le nom exact affiche par GitHub, en minuscules
-    image: ghcr.io/shikosu/portfolio:latest
+    # GHCR n'accepte que les minuscules : le depot s'appelle "New-Portfolio",
+    # l'image s'appelle donc "new-portfolio".
+    image: ghcr.io/shikosu/new-portfolio:latest
     container_name: irchi-v4
     restart: unless-stopped
     ports:
