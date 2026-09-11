@@ -38,6 +38,41 @@ GitHub, et rien à reconfigurer si ton IP publique change.
 
 ---
 
+## 1 bis. Pourquoi GitHub, alors que tout le reste est auto-hébergé
+
+Question posée et tranchée le 2026-09-11. GitHub n'est **pas** obligatoire ici : il joue trois
+rôles séparables, et deux des trois sont remplaçables sans rien perdre.
+
+| Rôle | Remplaçable par |
+|---|---|
+| Dépôt git distant | n'importe quel serveur git (dépôt nu sur le Pi, Forgejo sur le VPS) |
+| **Usine de build (CI)** | **une vraie machine — c'est le seul rôle qui a de la valeur** |
+| Registre d'images | n'importe quel registre (Forgejo en embarque un) |
+
+Trois raisons de le garder :
+
+1. **Le Pi ne compile pas.** Il fait déjà tourner Jellyfin, le NAS et d'autres conteneurs.
+   Le Pi 5 serait capable de compiler — ce n'est pas une question de puissance, mais de
+   charge et d'usure sur une machine qui sert déjà à autre chose.
+2. **Portes de qualité automatiques.** `npm run check` tourne avant la construction de
+   l'image : si le typecheck casse, rien n'est publié et le Pi continue de servir la version
+   qui marche. Un déploiement direct vers le Pi écraserait le site avec un build cassé.
+3. **Le dépôt fait partie du portfolio.** Phase 7 de la ROADMAP : « un recruteur ira voir ton
+   GitHub ». Un dépôt nu sur le Pi, personne ne le verra.
+
+**Ce que ça coûte de changer d'avis : un seul fichier.** Le `Dockerfile`, `deploy/nginx.conf`
+et `deploy/docker-compose.pi.yml` ne mentionnent GitHub nulle part. Seul
+`.github/workflows/deploiement.yml` y est lié. Migrer vers **Forgejo** (fork libre de Gitea,
+sur le VPS OVH) revient à réécrire ce fichier — la syntaxe des Actions y est quasi identique —
+et à changer l'adresse du registre.
+
+> Alternative la plus radicale, gardée en réserve : dépôt git nu sur le Pi + hook
+> `post-receive` qui fait `npm ci && npm run build` et copie dans le dossier Nginx. Zéro
+> Docker, zéro tiers, ~25 lignes de bash. Plus simple à comprendre de bout en bout, mais
+> aucun garde-fou et aucune sauvegarde hors de chez soi.
+
+---
+
 ## 2. Pourquoi le build n'est pas émulé
 
 Le Pi 5 est en **arm64**, les runners GitHub en **x86_64**. Construire une image arm64 depuis
