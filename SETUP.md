@@ -219,6 +219,35 @@ React au lieu d'une URL, ce qui permet d'atteindre chaque `<path>` avec GSAP.
 Les contraintes de fabrication du fichier sont au **§8 du CLAUDE.md** — notamment les trois
 éléments en tirets qu'il ne faut pas animer avec DrawSVG.
 
+## Étape 7 bis — L'avertissement `install-scripts` sur macOS
+
+Après `npm ci`, npm signale :
+
+```
+npm warn install-scripts 1 package had install scripts blocked ... fsevents@2.3.3
+```
+
+**C'est un avertissement, pas une erreur.** Les versions récentes de npm bloquent par défaut
+les scripts d'installation des paquets — du code qui s'exécuterait avec tes droits pendant
+l'installation, principal vecteur des attaques sur la chaîne d'approvisionnement npm.
+
+`fsevents` est le pont vers l'API FSEvents de macOS, que Vite utilise pour être *prévenu*
+qu'un fichier a changé plutôt que d'aller le *vérifier* en boucle — une interruption au lieu
+d'une scrutation.
+
+Marche à suivre : lancer `npm run dev`, modifier un fichier, vérifier que le rechargement à
+chaud fonctionne. Si oui, ignorer l'avertissement. Sinon :
+
+```bash
+npm install-scripts approve fsevents
+```
+
+Ne concerne que macOS et le développement : `fsevents` est une dépendance optionnelle
+`os: darwin`, absente du runner Linux de la CI, et le build de production ne surveille
+aucun fichier.
+
+---
+
 ## Étape 8 — Vérification de l'installation
 
 ```bash
