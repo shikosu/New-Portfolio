@@ -7,7 +7,7 @@ Durées indicatives pour un rythme d'étudiant (≈ 6-8 h/semaine hors cours).
 ```
 P0 ──► P1 ──► P2 ──► P3 ──► P4 ──► P5 ──► P6 ──► P7
 Cadrage Proto  Socle  Rail  Piste  Transi Contenu Qualité
- [x]    [x]    [~]    [~]   [~]    [x]    ....   ....
+ [x]    [x]    [~]    [~]   [~]    [x]    [~]    ....
                              ▲                       │
                              └── la boucle de reprise ┘
 
@@ -192,7 +192,9 @@ Aucun n'est inventé : **`CONTENU.md` les donne bloc par bloc**, c'est la source
       vers tous les projets » (11), « quatre liens » (12). **Ces listes n'existent pas encore**
       — elles sont marquées « ⧖ à fournir » et attendent la phase 6, et la règle 6 de
       `CONTENU.md` interdit d'y mettre du faux texte en attendant.
-      👉 À reprendre **juste après** la phase 6, pas avant. Le côté figure, lui, est fini et ne
+      👉 À reprendre **juste après** la phase 6, pas avant. *(2026-09-22 : les listes existent
+      maintenant, rendues statiques, chaque `<li>` porte `data-entree="04-1"`… — c'est le point
+      d'accroche. La liste 04 est encore vide : elle attend tes habitudes.)* Le côté figure, lui, est fini et ne
       sera pas refait : il suffira d'accrocher les items sur les timelines existantes.
 - [ ] **La figure « fab en construction » du bloc 12** — à dessiner par toi (Inkscape, §8).
       C'est le fond du bloc contact, ce n'est pas une étape de procédé.
@@ -285,25 +287,76 @@ Aucun n'est inventé : **`CONTENU.md` les donne bloc par bloc**, c'est la source
 > les entrées marquées « ⧖ à fournir » et à les basculer dans `src/content/*.ts` — pas à
 > réinventer la structure.
 
-- [ ] `content/parcours.ts` : chaque étape rédigée, datée, avec ce que j'y ai appris
-- [ ] `content/projets.ts` : 4 à 6 projets max. Pour chacun : le problème, la solution technique, ce qui a été difficile, le résultat
-- [ ] Compétences : par niveau réel de maîtrise, pas de barres de pourcentage inventées
-- [ ] Contact : e-mail, GitHub, LinkedIn, CV en PDF
-- [ ] Images de projets optimisées (WebP ou AVIF, dimensions correctes, `loading="lazy"`)
-- [ ] Métadonnées : `<title>`, description, image Open Graph
-- [ ] **Décider du rendu sans JavaScript.** Constaté en phase 2 : la page brute servie par
-      Nginx ne contient que les `<meta>` et un `<div id="root">` vide — tout le contenu est
-      fabriqué par React côté navigateur. Le §9.4 du CLAUDE.md n'exige que la survie *sans
-      animation*, donc ce n'est pas une violation ; mais pour le SEO ≥ 95 visé ici, il faudra
-      soit se contenter des métadonnées (Google exécute le JS), soit pré-générer le HTML des
-      4 pages au build (`vite-plugin-prerender` ou équivalent). À trancher ici, pas avant.
+### 6a — La mécanique du contenu *(faite le 2026-09-22)*
+
+- [x] **Le contrat** `content/types.ts` : un `Bloc` par étape (titre, chapô, texte, repère,
+      entrées, liens), tous les champs optionnels — un champ absent est un « ⧖ à fournir »,
+      pas un oubli. Plus aucun texte de chantier à l'écran (« Contenu rédigé en phase 6 »).
+- [x] **Le rendu** : `Panneau` passe à deux colonnes posées sur la piste (texte + figure à
+      gauche, listes et liens à droite), une seule en mobile. Nouveaux composants
+      `rail/Entrees.tsx` (vraies `<ul>`, fiche projet en `<dl>`) et `rail/Liens.tsx`
+      (`<a>` natifs : le clavier répond comme le clic, sans une ligne de JS).
+- [x] **Le marquage « brouillon »** : chaque bloc rédigé par Claude porte `brouillon: true`.
+      Une pastille le signale **en `npm run dev` uniquement** — `import.meta.env.DEV` vaut
+      `false` au build et la pastille disparaît du code livré (vérifié : 3 pastilles en dev,
+      0 en production).
+- [x] Métadonnées : `<title>` par page (`Objectifs — Téo Vidal`, annoncé par les lecteurs
+      d'écran), description, Open Graph + image `public/og.png` 1200 × 630, `theme-color`,
+      `canonical`.
+- [x] **Rendu sans JavaScript tranché : métadonnées + `<noscript>`**, pas de pré-rendu.
+      Google exécute le JS ; un pré-rendu ajoutait une dépendance et une hydratation à
+      surveiller sous GSAP/SplitText, pour un gain que la phase 7 dira s'il manque.
+- [x] Compétences : aucune barre de pourcentage. 3 groupes (CONTENU.md en listait 4 pour
+      « 3 maximum »). **« Flot RTL→GDSII » retiré** : la synthèse n'a pas commencé, l'annoncer
+      c'était offrir la question qui le démonte.
+- [x] Bloc 10 : **un seul projet phare**, Verilog → GDSII, en fiche problème / solution /
+      difficulté / résultat, honnête sur l'avancement.
+- [x] Bloc 11 : le lien pointe vers GitHub tant que `/projets` n'existe pas (pas de lien mort).
+
+### 6b — Le contenu lui-même *(à toi)*
+
+Les brouillons n'utilisent **que** des faits déjà donnés (PFMP, projets, parcours). Tout ce
+qui relève du ressenti est resté **vide**, et chaque fichier de `content/` liste en tête ce
+qui lui manque.
+
+- [ ] Relire chaque brouillon et passer `brouillon: false` bloc par bloc
+- [ ] 01 la phrase d'accroche · 02 l'anecdote du déclic · 03 ta méthode en une phrase
+- [ ] 04 les 3 à 5 habitudes réelles (la liste est vide) · 05 un 3ᵉ objectif ou non · 06 garder 3 ou 4 axes
+- [ ] 08 les dates des PFMP, ce qui a été **livré** dans chacune, l'ordre chronologique, Fiverr
+- [ ] 09 le niveau réel de chaque groupe
+- [ ] 12 e-mail public, LinkedIn, **CV en PDF** dans `public/`, deux lignes sur le travail en équipe
+- [ ] 12 la figure « fab en construction » (Inkscape, §8)
+- [ ] Images de projets (WebP/AVIF, `loading="lazy"`) — **aucune pour l'instant** : à ajouter
+      seulement si une photo prouve quelque chose (un PCB, un chronogramme GTKWave)
+- [ ] ⚠️ `canonical`, `og:url` et `og:image` pointent sur `v4.teovidal.eu` : à changer le jour
+      de la bascule vers `teovidal.eu`
 
 **Critères de sortie**
-✅ Zéro Lorem ipsum dans le dépôt.
-✅ Chaque projet répond à « qu'est-ce que ça prouve sur mes compétences ? ».
-✅ Relu par quelqu'un d'autre pour l'orthographe.
+- [x] Zéro Lorem ipsum dans le dépôt. ← vérifié au banc sur les 4 pages, et par recherche
+      dans `src/` et `index.html`.
+- [x] Chaque projet répond à « qu'est-ce que ça prouve sur mes compétences ? ». ← la fiche
+      du bloc 10 impose les 4 questions par son type.
+- [ ] Aucun bloc marqué `brouillon: true`.
+- [ ] Relu par quelqu'un d'autre pour l'orthographe.
 
-> Pour un recruteur en semi-conducteur : un projet expliqué en profondeur (le TB-303, la clé USB d'authentification, le Verilog→GDSII) vaut mieux que six projets listés. Choisis la profondeur.
+> **Banc de vérification de la phase 6** : 334 contrôles automatisés sur le build, 6 tailles
+> de bureau (1024 × 640 → 1920 × 1080), mobile 390, clavier, mode réduit, sans JS, 5
+> allers-retours de transition, redimensionnement en plein défilement. Tous au vert le
+> 2026-09-22, **sur Chromium uniquement**.
+>
+> **Trois défauts trouvés au banc et corrigés :**
+> 1. Sur 1280 × 720, le titre du bloc 01 et celui du 07 passaient **sous la navigation** (la
+>    zone haute ne fait que 490 px). Parade : une colonne large pour les blocs sans liste, et
+>    une figure qui ne grandit qu'au-delà de 800 px de haut, qui rétrécit sous 720.
+> 2. En mobile, la piste verticale (x = 24 px) **rayait la première lettre** de chaque ligne :
+>    le texte commençait lui aussi à 24 px. Invisible tant que les blocs étaient vides.
+> 3. À 1000 × 700, les 5 stages sur une seule colonne débordaient de 21 px.
+>
+> **Limite connue, décision à prendre :** sous ~1000 × 640 (fenêtre réduite, 800 × 600), la
+> fiche du bloc 10 ne tient plus dans la zone haute (−264 px à 800 × 600). Deux options :
+> (a) l'accepter, c'est une fenêtre rare ; (b) ne passer en rail horizontal que si la fenêtre
+> fait **aussi** au moins ~640 px de haut — même chemin de code que le mobile, mais ça touche
+> la décision « définitive » de la phase 3 (§2), donc c'est à toi de trancher.
 
 ---
 
@@ -335,7 +388,7 @@ Tout le détail est dans **QUALITY.md**. Résumé des portes :
 | P3 Rail | 2026-09-22 | | Mécanique close et vérifiée au banc (23/23). Décision mobile : pile verticale sous 768 px. Correction du §6.4 : la course se mesure en `clientWidth`, pas en `innerWidth` (barre de défilement). **Restent deux mesures manuelles : 60 fps et le vrai téléphone.** |
 | P4 Piste | 2026-09-22 | | **Phase réécrite** : les items « lueur / électrons / nœuds / R1-C4-U2 » étaient des restes du concept PCB. Socle (4a) fait et vérifié au banc (18/18) : figures nettoyées 109→15,5 Ko, piste tracée en front, révélations branchées en `containerAnimation`. 4b fait pour tout ce qui ne dépend pas du contenu : les 12 mécanismes côté figure, la sédimentation (01), l'amorçage (02), le compteur 98 %→9N (03), l'insolation par `clip-path` (07), le tracé vertical mobile. **Reste la mise en scène des listes (04, 05, 09, 10, 11, 12), bloquée par la phase 6**, et la figure du bloc 12. Banc : 81/81. |
 | P5 Transitions | 2026-09-22 | 2026-09-22 | Close. Coquille persistante + location différée (`<Routes location>`), liaison SVG fixe qui sort d'un bord et revient par l'autre, sens déduit de l'ordre du parcours (retour = miroir), routes en morceaux séparés avec préchargement au survol **et au focus**. Décision : sous 768 px, bascule instantanée — même chemin que le mode réduit. Banc 39/39. Deux pièges mesurés et consignés au §6.6 du CLAUDE.md : le `pin` qui rebobine quand le document raccourcit, et le garde-fou de 300 ms de Suspense. **Restent Firefox/Safari, les 60 fps et un jugement de goût sur le creux de ~150 ms.** |
-| P6 Contenu | | | |
+| P6 Contenu | 2026-09-22 | | **6a close** : contrat `content/types.ts`, rendu 2 colonnes, listes et liens, marquage brouillon visible en dev seulement, titre par page, Open Graph + `og.png`, `<noscript>`. Décisions : un seul projet phare (Verilog → GDSII), bloc 11 → GitHub, pas de pré-rendu. Banc 334/334. **6b à toi** : relecture des brouillons, textes de ressenti, dates, contact, CV. Limite connue sous ~1000 × 640. |
 | P7 Qualité | | | |
 
 ---

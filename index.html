@@ -4,14 +4,59 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FAFAF8" />
+
+    <!-- Identite du site. Memes valeurs que src/content/site.ts :
+         ce fichier-ci est lu AVANT le JavaScript, c'est ce que voient les
+         moteurs de recherche et les apercus de lien. -->
     <title>Téo Vidal — Irchi</title>
     <meta
       name="description"
-      content="Portfolio de Téo Vidal, étudiant BUT GEII : du sable à la puce."
+      content="Portfolio de Téo Vidal, étudiant en BUT GEII à Montpellier, en route vers le semi-conducteur. Le site est une ligne de fabrication : du sable à la puce."
     />
+    <meta name="author" content="Téo Vidal" />
+    <!-- ⚠️ A passer sur https://teovidal.eu/ le jour de la bascule. -->
+    <link rel="canonical" href="https://v4.teovidal.eu/" />
+
+    <!-- Open Graph : l'apercu quand le lien est colle dans LinkedIn,
+         Discord, un mail… L'image fait 1200 x 630, le format attendu. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="Irchi" />
+    <meta property="og:title" content="Téo Vidal — du sable à la puce" />
+    <meta
+      property="og:description"
+      content="Étudiant en BUT GEII, en route vers le semi-conducteur. Un portfolio construit comme une ligne de fabrication."
+    />
+    <meta property="og:url" content="https://v4.teovidal.eu/" />
+    <meta property="og:image" content="https://v4.teovidal.eu/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Une ligne noire sur fond clair, et le nom Téo Vidal : du sable à la puce."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Sans JavaScript (CLAUDE.md §9.4, decision de phase 6) : pas de
+         pre-rendu, mais l'essentiel reste lisible — qui, quoi, ou. -->
+    <noscript>
+      <main style="max-width: 40rem; margin: 6rem auto; padding: 0 1.5rem; font-family: system-ui, sans-serif; color: #111110; background: #fafaf8; line-height: 1.6">
+        <h1>Téo Vidal — Irchi</h1>
+        <p>
+          Étudiant en BUT GEII à l'IUT de Montpellier-Sète, en route vers l'industrie du
+          semi-conducteur.
+        </p>
+        <p>
+          Ce portfolio est une animation au défilement : il a besoin de JavaScript. Mes projets
+          restent consultables sur <a href="https://github.com/shikosu">GitHub</a>.
+        </p>
+      </main>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

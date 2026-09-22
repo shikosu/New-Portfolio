@@ -286,6 +286,39 @@ Candidats, par ordre de valeur supposée pour un recruteur semi-conducteur :
 
 ---
 
+## 3 bis. État au 2026-09-22 (phase 6a)
+
+Le texte vit dans `src/content/*.ts`. Chaque bloc rédigé par Claude porte `brouillon: true`
+et affiche une pastille « brouillon » **en `npm run dev` seulement**. Tant qu'un bloc est
+marqué, il n'a pas été relu par toi.
+
+| Bloc | Fichier | État |
+|---|---|---|
+| 01 | `presentation.ts` | brouillon (nom, chapô, repère) — ⧖ accroche |
+| 02 | `presentation.ts` | brouillon (le fil CIEL → GEII) — ⧖ anecdote du déclic |
+| 03 | `presentation.ts` | brouillon (cap Phelma, 9N) — ⧖ ta méthode en une phrase |
+| 04 | `objectifs.ts` | brouillon (analogie des dislocations) — ⧖ **habitudes : liste vide** |
+| 05 | `objectifs.ts` | brouillon, 2 objectifs — ⧖ un 3ᵉ ou non |
+| 06 | `objectifs.ts` | brouillon, 4 axes proposés — ⧖ en garder 3 ou 4 |
+| 07 | `experience.ts` | brouillon (4 PFMP, panorama) |
+| 08 | `experience.ts` | brouillon — ⧖ dates, ce qui a été livré, ordre, Fiverr |
+| 09 | `competences.ts` | brouillon, 3 groupes — ⧖ niveau réel par groupe |
+| 10 | `projets.ts` | brouillon, **un seul projet phare** : Verilog → GDSII |
+| 11 | `projets.ts` | brouillon, lien → GitHub (décidé) |
+| 12 | `projets.ts` | brouillon, GitHub seul — ⧖ e-mail, LinkedIn, CV PDF, 2 lignes équipe |
+
+**Décisions du 2026-09-22 :**
+- Bloc 09 : 3 groupes (« Embarqué et numérique », « Électronique », « Réseau et systèmes »),
+  le Verilog/FPGA rejoint l'embarqué. **« Flot RTL→GDSII » retiré** tant que la synthèse n'a
+  pas tourné — c'est un niveau surévalué, de ceux qui se démontent en trois questions.
+- Bloc 10 : un seul projet, Verilog → GDSII. La mécanique « chaque puce validée devient la
+  vignette d'un projet » n'allumera donc qu'une puce — c'est cohérent avec le choix de la
+  profondeur, mais à garder en tête pour la mise en scène.
+- Bloc 11 : GitHub, pas de lien mort.
+- Rendu sans JS : métadonnées + `<noscript>`, pas de pré-rendu.
+
+---
+
 ## 4. Règles de rédaction, valables partout
 
 1. **Aucun texte en dur dans un composant** (§5 du CLAUDE.md). Tout passe par `src/content/*.ts`.
