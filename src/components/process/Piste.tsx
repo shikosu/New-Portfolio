@@ -35,6 +35,9 @@ export function Piste({ refSvg, refTrace, orientation }: ProprietesPiste) {
   return (
     <svg
       ref={refSvg}
+      // `data-piste` : c'est par lui que `pointeDeLaPiste()` retrouve le
+      // trace au moment d'une transition de page (phase 5).
+      data-piste={orientation}
       aria-hidden="true"
       className={`text-ink pointer-events-none absolute inset-0 h-full w-full ${visibilite}`}
       fill="none"

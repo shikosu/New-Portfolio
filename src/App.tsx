@@ -1,25 +1,21 @@
-import { BrowserRouter, Routes, Route } from "react-router";
+import { BrowserRouter } from "react-router";
 import { Shell } from "@/components/layout/Shell";
-import { Presentation } from "@/pages/Presentation";
-import { Objectifs } from "@/pages/Objectifs";
-import { Experience } from "@/pages/Experience";
-import { Projets } from "@/pages/Projets";
 
-/* Les 4 pages du parcours (CLAUDE.md §2). Toutes sont enfants de <Shell>,
-   qui porte le fond, la navigation et l'instance Lenis : ils ne sont donc
-   pas remontes a chaque changement de page. */
+/* La coquille porte tout : le fond, la navigation, l'instance Lenis et
+   l'orchestrateur de transitions. Les 4 routes (CLAUDE.md §2) sont
+   declarees un cran plus bas, dans <TransitionPages>, et non ici.
+
+   Pourquoi pas une route de mise en page avec <Outlet/> comme en phase 2 ?
+   Parce que <Outlet/> rend TOUJOURS la page de l'adresse courante, alors
+   que la phase 5 a justement besoin de garder l'ancienne a l'ecran le
+   temps qu'elle sorte. Il faut donc pouvoir dire a React Router quelle
+   adresse rendre — ce qui se fait avec <Routes location={...}>, et pas
+   avec un Outlet. */
 
 export function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<Shell />}>
-          <Route index element={<Presentation />} />
-          <Route path="objectifs" element={<Objectifs />} />
-          <Route path="experience" element={<Experience />} />
-          <Route path="projets" element={<Projets />} />
-        </Route>
-      </Routes>
+      <Shell />
     </BrowserRouter>
   );
 }

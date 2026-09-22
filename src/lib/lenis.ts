@@ -64,3 +64,18 @@ export function defilerVers(y: number): void {
   }
   window.scrollTo({ top: y, behavior: "auto" });
 }
+
+/* ---------------------------------------------------------------------
+   Remise a zero du defilement entre deux pages (phase 5).
+
+   `immediate: true` et non une animation : a l'instant ou on l'appelle,
+   la page sortante est deja hors ecran et la nouvelle pas encore montee.
+   Personne ne voit ce trajet, donc l'animer ne ferait que retarder la
+   transition. Il faut aussi remettre la position NATIVE a zero : Lenis
+   lit et ecrit `window.scrollY`, mais si Lenis ne tourne pas (mode
+   "animations reduites"), c'est elle seule qui compte.
+   --------------------------------------------------------------------- */
+export function remettreEnHaut(): void {
+  instance?.scrollTo(0, { immediate: true, force: true });
+  window.scrollTo(0, 0);
+}

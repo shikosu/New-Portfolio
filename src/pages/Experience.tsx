@@ -1,5 +1,6 @@
 import { Rail } from "@/components/rail/Rail";
 import { Panneau } from "@/components/rail/Panneau";
+import { Suivant } from "@/components/ui/Suivant";
 import { ETAPES_EXPERIENCE } from "@/content/etapes";
 
 /* Page 3 du parcours. Un rail de 3 panneaux, alimente par la carte
@@ -8,7 +9,10 @@ import { ETAPES_EXPERIENCE } from "@/content/etapes";
 
 export function Experience() {
   return (
-    <Rail libelle="Experience et competences — etapes 07 a 09">
+    <Rail
+      libelle="Experience et competences — etapes 07 a 09"
+      suivant={<Suivant depuis="/experience" />}
+    >
       {ETAPES_EXPERIENCE.map((etape) => (
         <Panneau key={etape.repere} etape={etape} />
       ))}

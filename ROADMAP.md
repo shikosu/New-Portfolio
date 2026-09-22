@@ -7,8 +7,12 @@ Durées indicatives pour un rythme d'étudiant (≈ 6-8 h/semaine hors cours).
 ```
 P0 ──► P1 ──► P2 ──► P3 ──► P4 ──► P5 ──► P6 ──► P7
 Cadrage Proto  Socle  Rail  Piste  Transi Contenu Qualité
+ [x]    [x]    [~]    [~]   [~]    [x]    ....   ....
                              ▲                       │
                              └── la boucle de reprise ┘
+
+[~] = mécanique close et vérifiée au banc, restent des contrôles manuels
+      (Firefox, Safari, 60 fps, vrai téléphone) ou des reprises après la P6.
 ```
 
 ---
@@ -219,17 +223,59 @@ Aucun n'est inventé : **`CONTENU.md` les donne bloc par bloc**, c'est la source
 
 ## Phase 5 — Transitions de page · ~1 semaine
 
-- [ ] La piste sort par le bord droit de la page A et entre par le bord gauche de la page B
-- [ ] Le fond et la navigation persistent (seul le contenu est remplacé)
-- [ ] Durée ≤ 1,1 s, plafond absolu
-- [ ] Préchargement de la page suivante au survol de la flèche
-- [ ] Retour navigateur (bouton précédent) géré proprement
-- [ ] Mode « animations réduites » : bascule instantanée, aucune transition
+- [x] **La piste sort par le bord droit de la page A et entre par le bord gauche de la page B.**
+      Le trait de raccord est un SVG fixe posé dans la coquille (`components/layout/Liaison.tsx`),
+      à la même hauteur et à la même épaisseur que la piste du rail — sinon ce serait deux
+      objets et non une ligne (§8). Il reprend le trait **là où la pointe s'est arrêtée**
+      (`pointeDeLaPiste()`), et non au bord droit : partir du bord ferait apparaître un trait
+      pleine largeur d'un coup quand on clique depuis le haut d'une page.
+- [x] **Le fond et la navigation persistent.** `<Shell>` n'est plus une route de mise en page à
+      `<Outlet/>` mais la coquille elle-même : fond, nav et instance Lenis vivent au-dessus des
+      routes. Un `<Outlet/>` rend toujours l'adresse courante, or la phase 5 a besoin de garder
+      l'ancienne page à l'écran le temps qu'elle sorte — d'où `<Routes location={affichee}>`.
+- [x] **Durée ≤ 1,1 s.** 0,45 s de sortie + 0,55 s d'entrée = 1,00 s théorique.
+      **Mesuré au banc : 1,02 s à l'écran**, du premier trait de liaison au dernier.
+- [x] **Préchargement de la page suivante au survol de la flèche.** Les 4 pages sont des
+      morceaux séparés (`React.lazy`), et survol **comme focus clavier** déclenchent
+      l'`import()`. Vérifié : 0 requête avant le survol, 1 après.
+- [x] **Retour navigateur géré proprement**, et en **miroir** : on ne regarde pas *comment*
+      on a navigué mais *où on était* et *où on va* (`sensEntre`). Reculer dans le parcours
+      fait donc sortir la piste par la gauche et revenir par la droite. Le bouton « précédent »
+      et un clic sur une page déjà vue se comportent pareil, sans code de plus.
+- [x] **Mode « animations réduites » : bascule instantanée.** Et **sous 768 px aussi** —
+      décision consignée au §2 du CLAUDE.md : un seul chemin de code, comme pour le rail.
+- [x] **La flèche de fin de rail** (`components/ui/Suivant.tsx`), qui n'existait pas : posée
+      dans le dernier panneau, à droite, sur la piste. C'est un bout de trait terminé par un
+      chevron, pas un `→` collé au libellé (interdit au §10).
 
 **Critères de sortie**
-✅ Aucun clignotement blanc entre deux pages.
-✅ Aller-retour 10 fois d'affilée entre deux pages : aucune fuite mémoire, aucun ScrollTrigger orphelin (`ScrollTrigger.getAll().length` reste stable dans la console).
-✅ L'URL change et une page rechargée directement s'affiche correctement.
+- [x] Aucun clignotement blanc entre deux pages. ← mesuré image par image : le fond reste à
+      `rgb(250,250,248)` sur **tous** les échantillons, et `#root` n'est jamais vide.
+- [x] Aller-retour 10 fois d'affilée : aucun ScrollTrigger orphelin. ← un seul `pin-spacer`
+      avant comme après, nombre de nœuds DOM stable (131 → 133), et le rail défile toujours
+      jusqu'à −2560 px au dixième passage.
+- [x] L'URL change et une page rechargée directement s'affiche correctement. ← `/experience`
+      ouvert en direct rend bien les étapes 07 à 09, en pleine opacité.
+
+> **Banc de vérification de la phase 5** : 39 contrôles automatisés dans un navigateur réel
+> (bureau 1280, mode « animations réduites », mobile 390, clavier, 10 allers-retours).
+> Tous au vert le 2026-09-22, **sur Chromium uniquement**.
+>
+> **Deux défauts trouvés au banc et corrigés — ils valaient le banc à eux seuls :**
+> 1. Le rail **rebobinait** au début de la sortie : passer la page en `position: fixed` sort
+>    le `pin-spacer` du flux, le document raccourcit et le navigateur ramène le défilement à
+>    zéro. On fige la hauteur du `body` le temps de la sortie.
+> 2. La page entrante **apparaissait 336 ms en retard, d'un bloc, à 83 % d'opacité** :
+>    `React.lazy` suspend au premier rendu et React refuse de remplacer un `fallback` avant
+>    ~300 ms. Parade : `startTransition`. Détail au §6.6 du CLAUDE.md.
+
+**Ce qui reste, et qui n'appartient qu'à moi**
+- [ ] Vérifié sur **Firefox** et **Safari** (même dette que la phase 4).
+- [ ] 60 fps tenus pendant la transition, dans l'onglet Performance, sur le build.
+- [ ] **Jugement de goût à rendre** : entre les deux moitiés, l'écran est quasi vide pendant
+      ~150 ms. C'est propre sur image fixe, mais c'est à moi de dire si ça respire ou si ça
+      tombe. Si ça tombe, le réglage est de faire chevaucher les deux moitiés de ~0,15 s dans
+      `TRANSITION` — pas de réécriture.
 
 ---
 
@@ -288,7 +334,7 @@ Tout le détail est dans **QUALITY.md**. Résumé des portes :
 | P2 Socle | 2026-09-10 | 2026-09-11 | Vite 8 + React 19.2 + TS 6 strict + Tailwind v4. `npm run check` vert, test du carré validé. En ligne sur `v4.teovidal.eu` (Pi 5, Docker/GHCR/Watchtower, tunnel Cloudflare). Reste à confirmer le déploiement automatique de bout en bout. |
 | P3 Rail | 2026-09-22 | | Mécanique close et vérifiée au banc (23/23). Décision mobile : pile verticale sous 768 px. Correction du §6.4 : la course se mesure en `clientWidth`, pas en `innerWidth` (barre de défilement). **Restent deux mesures manuelles : 60 fps et le vrai téléphone.** |
 | P4 Piste | 2026-09-22 | | **Phase réécrite** : les items « lueur / électrons / nœuds / R1-C4-U2 » étaient des restes du concept PCB. Socle (4a) fait et vérifié au banc (18/18) : figures nettoyées 109→15,5 Ko, piste tracée en front, révélations branchées en `containerAnimation`. 4b fait pour tout ce qui ne dépend pas du contenu : les 12 mécanismes côté figure, la sédimentation (01), l'amorçage (02), le compteur 98 %→9N (03), l'insolation par `clip-path` (07), le tracé vertical mobile. **Reste la mise en scène des listes (04, 05, 09, 10, 11, 12), bloquée par la phase 6**, et la figure du bloc 12. Banc : 81/81. |
-| P5 Transitions | | | |
+| P5 Transitions | 2026-09-22 | 2026-09-22 | Close. Coquille persistante + location différée (`<Routes location>`), liaison SVG fixe qui sort d'un bord et revient par l'autre, sens déduit de l'ordre du parcours (retour = miroir), routes en morceaux séparés avec préchargement au survol **et au focus**. Décision : sous 768 px, bascule instantanée — même chemin que le mode réduit. Banc 39/39. Deux pièges mesurés et consignés au §6.6 du CLAUDE.md : le `pin` qui rebobine quand le document raccourcit, et le garde-fou de 300 ms de Suspense. **Restent Firefox/Safari, les 60 fps et un jugement de goût sur le creux de ~150 ms.** |
 | P6 Contenu | | | |
 | P7 Qualité | | | |
 

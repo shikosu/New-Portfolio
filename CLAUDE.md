@@ -55,6 +55,11 @@ Règles de structure :
   composant `<Rail>` doivent rester alignées dessus.
   ⚠️ Conséquence : la piste se tracera **de haut en bas** en mobile (phase 4), pas de gauche
   à droite. Ce n'est pas une dégradation, c'est le même récit sur l'autre axe.
+  ⚠️ Deuxième conséquence, décidée en phase 5 : **sous 768 px, le changement de page est une
+  bascule instantanée**, le même chemin de code que le mode « animations réduites ». Une
+  liaison horizontale n'aurait aucun sens sur une piste verticale, et un balayage vertical
+  serait une deuxième mécanique à régler et à tester pour un gain que personne ne réclame.
+  Le critère « aucun clignotement blanc » reste tenu : une bascule instantanée n'en a pas.
 
 Storyboard détaillé des 12 vignettes — ce qui entre, ce qui sort, dans quel sens, déclenché par quoi :
 `https://claude.ai/code/artifact/077a28a2-2ce5-4a46-a2d8-3613e6d6d437`
@@ -115,15 +120,17 @@ src/
 │   ├── lenis.ts             # instance unique + synchro ScrollTrigger
 │   ├── motion.ts            # constantes d'animation + géométrie de la piste — cf. §7
 │   ├── procede.ts           # branchement de la piste et des révélations de figures
-│   └── mecanismes.ts        # LES 12 MÉCANISMES, un par bloc — cf. CONTENU.md
+│   ├── mecanismes.ts        # LES 12 MÉCANISMES, un par bloc — cf. CONTENU.md
+│   ├── parcours.ts          # l'ordre des 4 pages, le sens, le chargement à la demande
+│   └── transition.ts        # les deux moitiés d'une transition de page — cf. §6.6
 ├── hooks/
 │   ├── useHorizontalRail.ts
 │   └── usePrefersReducedMotion.ts
 ├── components/
-│   ├── layout/              # Shell, Nav, Footer
+│   ├── layout/              # Shell, Nav, TransitionPages, Liaison
 │   ├── rail/                # Rail, Panneau, IndicateurRail
 │   ├── process/             # Piste, Figure, figures.ts (les 12 imports svgr)
-│   └── ui/                  # boutons, liens, primitives
+│   └── ui/                  # Suivant (la flèche de fin de rail), primitives
 ├── pages/
 │   ├── Presentation.tsx
 │   ├── Objectifs.tsx
@@ -152,6 +159,8 @@ par des attributs `data-*`. Les renommer casse un mécanisme sans que TypeScript
 | `data-insole` | la zone de texte entière | 07 ★, révélation par `clip-path` |
 | `data-compteur` | le compteur `mono` | 03, 98 % → 9N |
 | `data-panneau="2"` | l'enveloppe de panneau du rail | défilement au focus clavier (§9.2) |
+| `data-piste="horizontale"` | le `<svg>` de la piste | `pointeDeLaPiste()` y lit où le trait s'est arrêté, pour que la transition reprenne au bon endroit |
+| `data-liaison` | le `<svg>` fixe de la coquille | le trait qui relie deux pages pendant une transition (§6.6) |
 
 **Règle du `content/` :** aucun texte de contenu en dur dans un composant. Tout passe par un tableau typé dans `content/`. Ça me permet de changer le contenu sans toucher aux animations.
 
@@ -237,6 +246,36 @@ gsap.ticker.lagSmoothing(0);
 
 Sans ça, ScrollTrigger lit la position native du navigateur pendant que Lenis affiche une position lissée : tout se déclenche au mauvais moment.
 
+### 6.6 Transitions de page : les deux pièges mesurés en phase 5
+
+Ils se ressemblent : dans les deux cas, ce qui casse n'est pas l'animation mais le
+**moment** où le DOM change sous elle.
+
+1. **`transform` crée un bloc conteneur pour les descendants en `position: fixed`.**
+   Or le rail `pin` son conteneur en `position: fixed`. Donc translater l'enveloppe d'une
+   page qui contient un rail épinglé déplace aussi le pin — et si la boîte de l'enveloppe
+   n'est pas celle de la fenêtre, tout saute.
+   - La page **sortante** peut glisser, parce qu'on la passe d'abord en
+     `position: fixed; inset: 0` (classe `.scene-figee`) : sa boîte **est** la fenêtre, le
+     pin retombe au pixel près. ⚠️ Il faut alors figer la hauteur du `body` avant, sinon le
+     `pin-spacer` quitte le flux, le document raccourcit, le navigateur ramène le
+     défilement à 0 et **le rail rebobine sous les yeux de l'utilisateur**.
+   - La page **entrante** ne peut pas glisser : son rail vient d'être mesuré. Elle se
+     révèle en `opacity`, la seule propriété qui ne crée pas de bloc conteneur.
+     Ce n'est pas le préréglage « fondu » interdit par le §7 : le mouvement est porté par
+     le front de la liaison, l'opacité ne fait que découvrir ce qu'il a déjà tracé.
+
+2. **Une page chargée à la demande suspend, et React attend 300 ms avant de remplacer un
+   `fallback`.** Mesuré au banc : la page entrante arrivait 336 ms en retard, donc d'un
+   bloc, à 83 % d'opacité. La parade est `startTransition` : React garde l'ancien arbre
+   à l'écran, n'affiche jamais le fallback, et n'a donc aucun garde-fou à appliquer.
+   👉 Règle générale : **un changement de page qui déclenche une animation passe
+   obligatoirement par `startTransition`**, sinon l'animation et le DOM se désynchronisent.
+
+Corollaire de la même famille : `lagSmoothing(0)` (§6.5) fait que GSAP **ne lisse pas** une
+image longue. L'image du rendu de la nouvelle page en est une. L'entrée est donc créée en
+pause et lancée à l'image suivante, sinon elle démarre déjà à 11 % de sa course.
+
 ---
 
 ## 7. Règles d'animation — le barème « cher vs cheap »
@@ -269,6 +308,12 @@ export const TRAIT         = 2.4;  // épaisseur commune piste + figures (§8)
 // Mesure de phase 1 (`proto/scrub-lab.html`, 2026-09-10) : 0.3 reste collé au
 // doigt, 1 commence a flotter, 2 devient elastique. 60 fps, pire image 17 ms.
 export const SCRUB = 0.3;
+
+// Transitions de page (phase 5). Les deux moitiés sont SÉQUENTIELLES :
+// leur somme est la durée perçue, et elle reste sous DUR.page.
+//     0,45 + 0,55 = 1,00 s   ≤   1,10 s
+// Mesure au banc : 1,02 s à l'écran, du premier trait de liaison au dernier.
+export const TRANSITION = { sortie: 0.45, entree: 0.55 } as const;
 ```
 
 **Interdits stricts :**

@@ -49,3 +49,20 @@ export const MARGE_PISTE = 24;
 /** Epaisseur de trait commune a la piste ET aux 12 figures (CLAUDE.md §8 :
     "la piste est une seule ligne ; deux epaisseurs = deux objets"). */
 export const TRAIT = 2.4;
+
+/* ---------------------------------------------------------------------
+   Transitions de page (phase 5).
+
+   Les deux moities sont SEQUENTIELLES : la page sortante finit de partir
+   avant que l'entrante ne commence. Leur somme est donc la duree totale
+   percue, et elle doit rester sous `DUR.page`, le plafond absolu du §7 :
+
+       0,45 + 0,55 = 1,00 s   <=   DUR.page = 1,10 s
+
+   L'entree est plus longue que la sortie, et ce n'est pas un hasard :
+   on quitte vite ce qu'on a fini de lire, on prend le temps de poser ce
+   qu'on va lire. --------------------------------------------------- */
+export const TRANSITION = {
+  sortie: 0.45,
+  entree: 0.55,
+} as const;
