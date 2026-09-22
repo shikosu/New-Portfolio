@@ -37,13 +37,25 @@ export function Panneau({ etape }: ProprietesPanneau) {
   const idTitre = `bloc-${etape.repere}-titre`;
 
   return (
-    <article tabIndex={0} aria-labelledby={idTitre} className="relative h-full w-full">
+    <article
+      // `data-etape` : c'est par lui que `lib/procede.ts` retrouve le
+      // mecanisme du bloc et le prefixe des id de sa figure (f01-, f02-…).
+      data-etape={etape.repere}
+      tabIndex={0}
+      aria-labelledby={idTitre}
+      className="relative h-full w-full"
+    >
       <div
         className="absolute inset-x-6 top-0 flex flex-col justify-end gap-10 pt-24 md:inset-x-16"
         style={{ height: `${HAUTEUR_PISTE * 100}%` }}
       >
-        <div>
-          <p className="text-mono font-mono flex flex-wrap items-center gap-3 uppercase">
+        {/* `data-insole` : la zone que le bloc 07 revele par clip-path.
+            Les autres blocs ne s'en servent pas. */}
+        <div data-insole="">
+          <p
+            data-ligne=""
+            className="text-mono font-mono flex flex-wrap items-center gap-3 uppercase"
+          >
             <span className="text-ink">{etape.repere}</span>
             <span className="text-ink-soft">{etape.procede}</span>
             {etape.fort && (
@@ -53,13 +65,23 @@ export function Panneau({ etape }: ProprietesPanneau) {
             )}
           </p>
 
-          <h2 id={idTitre} className="text-title font-display mt-4 text-balance">
+          <h2 id={idTitre} data-titre="" className="text-title font-display mt-4 text-balance">
             {etape.sujet}
           </h2>
 
-          <p className="text-body text-ink-soft mt-4 max-w-[60ch]">
+          <p data-texte="" className="text-body text-ink-soft mt-4 max-w-[60ch]">
             Contenu redige en phase 6 — voir CONTENU.md, bloc {etape.repere}.
           </p>
+
+          {/* Le compteur du bloc 03 : il monte de 98 % a 9N pendant que
+              les impuretes quittent la colonne. C'est un MECANISME decrit
+              par CONTENU.md, pas du contenu — et il est en HTML, jamais en
+              <text> SVG (§8), pour rester selectionnable et lisible. */}
+          {etape.repere === "03" && (
+            <p data-compteur="" className="text-mono font-mono text-ink mt-4">
+              98 %
+            </p>
+          )}
         </div>
 
         {/* La figure, posee sur la piste. `block` + hauteur fixe : son bas

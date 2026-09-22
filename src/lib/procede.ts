@@ -1,5 +1,7 @@
 import { gsap, ScrollTrigger } from "@/lib/gsap";
-import { AVANCE_PISTE, DUR, EASE, HAUTEUR_PISTE } from "@/lib/motion";
+import { AVANCE_PISTE, DUR, EASE, HAUTEUR_PISTE, MARGE_PISTE, SCRUB } from "@/lib/motion";
+import type { Contexte } from "@/lib/mecanismes";
+import { MECANISMES, MECANISME_PAR_DEFAUT } from "@/lib/mecanismes";
 
 /* =====================================================================
    Le procede : la piste, et la revelation des figures.
@@ -103,10 +105,7 @@ export function brancherPiste({
 
   const mettreAJour = (progression: number) => {
     if (longueur === 0) return;
-    const tracee = longueur * (fractionDepart + progression * (1 - fractionDepart));
-    // "tracee, longueur" : un tiret long de `tracee`, puis un trou assez
-    // grand pour que le reste du chemin ne reapparaisse jamais.
-    trace.style.strokeDasharray = `${tracee} ${longueur}`;
+    poserDash(trace, longueur * (fractionDepart + progression * (1 - fractionDepart)), longueur);
   };
 
   const surRefresh = () => mesurer();
@@ -116,6 +115,71 @@ export function brancherPiste({
     mettreAJour,
     nettoyer: () => ScrollTrigger.removeEventListener("refresh", surRefresh),
   };
+}
+
+/* Ecrit la portion tracee d'un chemin. "tracee, longueur" = un tiret
+   long de `tracee`, puis un trou assez grand pour que le reste du
+   chemin ne reapparaisse jamais. C'est le mecanisme meme de DrawSVG,
+   explicitement tolere par le §7. */
+function poserDash(trace: SVGPathElement, tracee: number, longueur: number) {
+  trace.style.strokeDasharray = `${tracee} ${longueur}`;
+}
+
+// ---------------------------------------------------------------------
+// 1 bis. LA PISTE VERTICALE (mobile)
+// ---------------------------------------------------------------------
+
+interface OptionsPisteVerticale {
+  readonly conteneur: HTMLElement;
+  readonly svg: SVGSVGElement;
+  readonly trace: SVGPathElement;
+}
+
+/* Sous 768 px, le rail est une pile verticale (decision de phase 3) :
+   la piste s'y trace donc de haut en bas. Meme recit, autre axe.
+
+   Ici le conteneur n'est PAS epingle — le piege n°1 du §6.4 ne
+   s'applique pas, et cette piste peut avoir son propre ScrollTrigger. */
+export function brancherPisteVerticale({
+  conteneur,
+  svg,
+  trace,
+}: OptionsPisteVerticale): () => void {
+  let longueur = 0;
+  let fractionDepart = 0;
+
+  const mesurer = () => {
+    const largeur = conteneur.clientWidth;
+    const hauteur = conteneur.offsetHeight;
+    if (largeur === 0 || hauteur === 0) return;
+    svg.setAttribute("viewBox", `0 0 ${largeur} ${hauteur}`);
+    trace.setAttribute("d", `M ${MARGE_PISTE} 0 V ${hauteur}`);
+    longueur = hauteur;
+    // Meme avance qu'a l'horizontale, mais en hauteurs d'ecran.
+    fractionDepart = Math.min(1, (window.innerHeight * AVANCE_PISTE) / hauteur);
+  };
+  mesurer();
+
+  const declencheur = ScrollTrigger.create({
+    trigger: conteneur,
+    start: "top top",
+    end: "bottom bottom",
+    scrub: SCRUB,
+    invalidateOnRefresh: true,
+    onRefresh: (self) => {
+      mesurer();
+      appliquer(self.progress);
+    },
+    onUpdate: (self) => appliquer(self.progress),
+  });
+
+  function appliquer(progression: number) {
+    if (longueur === 0) return;
+    poserDash(trace, longueur * (fractionDepart + progression * (1 - fractionDepart)), longueur);
+  }
+  appliquer(0);
+
+  return () => declencheur.kill();
 }
 
 // ---------------------------------------------------------------------
@@ -141,10 +205,16 @@ interface OptionsFigures {
 
 export function brancherFigures({ conteneur, animation }: OptionsFigures): () => void {
   const enveloppes = gsap.utils.toArray<HTMLElement>("[data-figure]", conteneur);
+  const timelines: gsap.core.Timeline[] = [];
+  const nettoyages: Array<() => void> = [];
 
-  const timelines = enveloppes.flatMap((enveloppe) => {
+  for (const enveloppe of enveloppes) {
     const svg = enveloppe.querySelector("svg");
-    if (!svg) return [];
+    if (!svg) continue;
+
+    const panneau = enveloppe.closest<HTMLElement>("[data-etape]");
+    const repere = panneau?.dataset.etape ?? "";
+    const prefixe = `f${repere}-`;
 
     const elements = gsap.utils.toArray<SVGElement>(DESSINABLES, svg);
     const traits = elements.filter((el) => !enTirets(el));
@@ -154,8 +224,8 @@ export function brancherFigures({ conteneur, animation }: OptionsFigures): () =>
        aucune entree a jouer : dans un containerAnimation, les elements
        vont de la droite vers la gauche, donc son bord gauche a DEJA
        depasse le milieu de l'ecran. Son ScrollTrigger se placerait avant
-       le debut du rail et ne se declencherait jamais. On la dessine donc
-       a l'ouverture de la page. */
+       le debut du rail et ne se declencherait jamais. On la joue donc a
+       l'ouverture de la page. */
     const dejaVisible = enveloppe.getBoundingClientRect().left < conteneur.clientWidth * 0.5;
 
     const tl = gsap.timeline({
@@ -167,9 +237,9 @@ export function brancherFigures({ conteneur, animation }: OptionsFigures): () =>
             trigger: enveloppe,
             // containerAnimation : on dit a ScrollTrigger "cet element ne
             // descend pas, il glisse vers la gauche, surveille CETTE
-            // animation-la". Sans cette ligne, la figure ne se revele jamais.
+            // animation-la". Sans cette ligne, rien ne se revele jamais.
             containerAnimation: animation,
-            // ⚠ ERREUR N°1 sur ce type de site : dans un containerAnimation,
+            // ⚠ ERREUR N°1 sur ce type de site : dans un containerAnimation
             // les mots-cles changent d'axe. "left center" = "le bord gauche
             // de la figure atteint le milieu de l'ecran". Un "top center"
             // surveillerait une coordonnee verticale qui ne bouge jamais.
@@ -178,35 +248,66 @@ export function brancherFigures({ conteneur, animation }: OptionsFigures): () =>
           },
     });
 
-    // Le trait se dessine. `stagger.amount` et non `stagger.each` : la
-    // cascade dure toujours DUR.base au total, que la figure ait 2
-    // elements (polissage) ou 43 (test sous pointes). Avec `each`, la
-    // figure 10 aurait mis 2,5 s — au-dessus du plafond du §7.
-    if (traits.length > 0) {
-      tl.fromTo(
-        traits,
-        { drawSVG: "0%" },
-        { drawSVG: "100%", duration: DUR.base, ease: EASE.out, stagger: { amount: DUR.base } },
-        0,
-      );
-    }
+    const contexte: Contexte = {
+      tl,
+      el: (suffixe) => svg.querySelector<SVGElement>(`#${CSS.escape(prefixe + suffixe)}`),
+      els: (prefixeCourt) => elements.filter((el) => el.id.startsWith(prefixe + prefixeCourt)),
+      traits,
+      tirets,
+      dans: (selecteur) => panneau?.querySelector<HTMLElement>(selecteur) ?? null,
 
-    if (tirets.length > 0) {
-      tl.fromTo(
-        tirets,
-        { opacity: 0 },
-        { opacity: 1, duration: DUR.base, ease: EASE.out, stagger: { amount: DUR.micro } },
-        DUR.base * 0.6,
-      );
-    }
+      dessiner: (cibles, position = 0, options) => {
+        // On ecarte les elements en tirets meme si un mecanisme les
+        // passe par megarde : DrawSVG ecraserait leur stroke-dasharray.
+        const liste = cibles.filter(
+          (el): el is SVGElement => el !== null && el !== undefined && !enTirets(el),
+        );
+        if (liste.length === 0) return;
+        tl.fromTo(
+          liste,
+          { drawSVG: "0%" },
+          {
+            drawSVG: "100%",
+            duration: options?.duree ?? DUR.base,
+            ease: EASE.out,
+            // `stagger.amount` et non `stagger.each` : la cascade dure
+            // toujours la meme chose, que la figure ait 2 elements
+            // (polissage) ou 43 (test sous pointes). Avec `each`, la
+            // figure 10 aurait mis 2,5 s, au-dessus du plafond du §7.
+            stagger: { amount: options?.etendue ?? 0 },
+          },
+          position,
+        );
+      },
 
-    return [tl];
-  });
+      opacite: (cibles, position = 0) => {
+        const liste = cibles.filter((el): el is SVGElement => el !== null && el !== undefined);
+        if (liste.length === 0) return;
+        tl.fromTo(
+          liste,
+          { opacity: 0 },
+          { opacity: 1, duration: DUR.base, ease: EASE.out, stagger: { amount: DUR.micro } },
+          position,
+        );
+      },
+
+      auNettoyage: (fn) => nettoyages.push(fn),
+    };
+
+    // Le mecanisme propre au bloc (CONTENU.md), ou la revelation sobre.
+    const mecanisme = MECANISMES[repere] ?? MECANISME_PAR_DEFAUT;
+    mecanisme(contexte);
+
+    timelines.push(tl);
+  }
 
   return () => {
     for (const tl of timelines) {
       tl.scrollTrigger?.kill();
       tl.kill();
     }
+    // SplitText doit rendre le DOM d'origine, sinon le titre reste
+    // decoupe en <div> et les lecteurs d'ecran le lisent lettre a lettre.
+    for (const nettoyer of nettoyages) nettoyer();
   };
 }

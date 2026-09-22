@@ -3,7 +3,7 @@ import type { RefObject } from "react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { EASE, SCRUB } from "@/lib/motion";
 import { defilerVers } from "@/lib/lenis";
-import { brancherFigures, brancherPiste } from "@/lib/procede";
+import { brancherFigures, brancherPiste, brancherPisteVerticale } from "@/lib/procede";
 
 /* =====================================================================
    useHorizontalRail — le squelette de navigation du site (ROADMAP P3).
@@ -48,8 +48,11 @@ interface OptionsRail {
   /** Le <svg> de la piste (phase 4) : son viewBox est pose en pixels. */
   readonly refPisteSvg: RefObject<SVGSVGElement | null>;
   /** Le <path> de la piste : son `d` est pose en pixels, et c'est lui
-      que DrawSVG trace au scrub. */
+      qu'on trace au scrub. */
   readonly refPisteTrace: RefObject<SVGPathElement | null>;
+  /** Idem pour la piste verticale du mobile (sous 768 px). */
+  readonly refPisteSvgV: RefObject<SVGSVGElement | null>;
+  readonly refPisteTraceV: RefObject<SVGPathElement | null>;
 }
 
 interface RetourRail {
@@ -74,6 +77,8 @@ export function useHorizontalRail({
   refCompteur,
   refPisteSvg,
   refPisteTrace,
+  refPisteSvgV,
+  refPisteTraceV,
 }: OptionsRail): RetourRail {
   const refConteneur = useRef<HTMLDivElement>(null);
   const refConvoyeur = useRef<HTMLDivElement>(null);
@@ -267,6 +272,21 @@ export function useHorizontalRail({
           refAnimationConteneur.current = null;
           // Le tween et son ScrollTrigger sont revoques par matchMedia.
         };
+      });
+
+      /* -----------------------------------------------------------------
+         BLOC 7 — le mobile
+         Sous 768 px il n'y a pas de rail : les panneaux sont empiles et
+         le defilement est natif. La piste s'y trace de haut en bas.
+         Le conteneur n'etant pas epingle, cette piste-la peut avoir son
+         propre ScrollTrigger (le piege n°1 du §6.4 ne s'applique qu'a un
+         element epingle).
+         ----------------------------------------------------------------- */
+      mm.add(`(max-width: ${SEUIL_RAIL - 1}px)`, () => {
+        const svg = refPisteSvgV.current;
+        const trace = refPisteTraceV.current;
+        if (!svg || !trace) return;
+        return brancherPisteVerticale({ conteneur, svg, trace });
       });
 
       return () => mm.revert();

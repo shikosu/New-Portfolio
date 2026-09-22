@@ -114,7 +114,8 @@ src/
 │   ├── gsap.ts              # ⚠️ SEUL endroit où on fait registerPlugin()
 │   ├── lenis.ts             # instance unique + synchro ScrollTrigger
 │   ├── motion.ts            # constantes d'animation + géométrie de la piste — cf. §7
-│   └── procede.ts           # branchement de la piste et des révélations de figures
+│   ├── procede.ts           # branchement de la piste et des révélations de figures
+│   └── mecanismes.ts        # LES 12 MÉCANISMES, un par bloc — cf. CONTENU.md
 ├── hooks/
 │   ├── useHorizontalRail.ts
 │   └── usePrefersReducedMotion.ts
@@ -139,6 +140,19 @@ src/
     └── process/             # les 4 figures de procédé (SVG) — cf. §8
 ```
 
+**Le contrat entre le HTML et les mécanismes.** `lib/mecanismes.ts` ne connaît le panneau que
+par des attributs `data-*`. Les renommer casse un mécanisme sans que TypeScript s'en aperçoive :
+
+| Attribut | Porté par | Utilisé par |
+|---|---|---|
+| `data-etape="07"` | l'`<article>` du panneau | retrouve le mécanisme **et** le préfixe des `id` de sa figure (`f07-`) |
+| `data-figure` | l'enveloppe du SVG | déclencheur ScrollTrigger de la révélation |
+| `data-titre` | le `<h2>` | 01 (sédimentation), 02 (amorçage) |
+| `data-texte` | le paragraphe | 02 |
+| `data-insole` | la zone de texte entière | 07 ★, révélation par `clip-path` |
+| `data-compteur` | le compteur `mono` | 03, 98 % → 9N |
+| `data-panneau="2"` | l'enveloppe de panneau du rail | défilement au focus clavier (§9.2) |
+
 **Règle du `content/` :** aucun texte de contenu en dur dans un composant. Tout passe par un tableau typé dans `content/`. Ça me permet de changer le contenu sans toucher aux animations.
 
 ---
@@ -155,7 +169,7 @@ import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import { useGSAP } from "@gsap/react";
 
-gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, MotionPathPlugin, useGSAP);
+gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, MotionPathPlugin, SplitText, useGSAP);
 
 export { gsap, ScrollTrigger, useGSAP };
 ```
@@ -274,6 +288,9 @@ export const SCRUB = 0.3;
   par la droite non tracé, franchit le front, et ressort tracé. C'est le convoyeur d'une ligne
   de fab. Le calcul complet est en tête de `lib/procede.ts` ; les deux réglages sont
   `HAUTEUR_PISTE` et `AVANCE_PISTE`.
+- **Un bloc sans mécanisme de texte garde un texte statique.** `CONTENU.md` n'en prescrit que
+  pour 01, 02, 03 et 07. Les autres n'en reçoivent pas : « les blocs non-★ apparaissent, ils ne
+  se donnent pas en spectacle ». Ne pas leur inventer une entrée pour « équilibrer ».
 - **La piste n'utilise pas DrawSVG.** C'est une droite : on écrit directement son
   `stroke-dasharray`, qui est le mécanisme que le plugin emploie de toute façon (toléré par le
   §7). DrawSVG reste utilisé pour les figures, qui sont courbes.

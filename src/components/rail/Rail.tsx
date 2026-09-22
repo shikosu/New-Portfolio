@@ -56,6 +56,8 @@ export function Rail({ children, libelle }: ProprietesRail) {
   const refCompteur = useRef<HTMLSpanElement>(null);
   const refPisteSvg = useRef<SVGSVGElement>(null);
   const refPisteTrace = useRef<SVGPathElement>(null);
+  const refPisteSvgV = useRef<SVGSVGElement>(null);
+  const refPisteTraceV = useRef<SVGPathElement>(null);
 
   const { refConteneur, refConvoyeur } = useHorizontalRail({
     nombreDePanneaux: total,
@@ -64,6 +66,8 @@ export function Rail({ children, libelle }: ProprietesRail) {
     refCompteur,
     refPisteSvg,
     refPisteTrace,
+    refPisteSvgV,
+    refPisteTraceV,
   });
 
   // En mode "animations reduites", le rail redevient une simple pile,
@@ -90,7 +94,12 @@ export function Rail({ children, libelle }: ProprietesRail) {
       <div ref={refConvoyeur} className={classesConvoyeur}>
         {/* La piste vit DANS le convoyeur : elle se translate avec les
             panneaux, ce qui fait de sa pointe un front fixe a l'ecran. */}
-        {!empile && <Piste refSvg={refPisteSvg} refTrace={refPisteTrace} />}
+        {!empile && (
+          <>
+            <Piste refSvg={refPisteSvg} refTrace={refPisteTrace} orientation="horizontale" />
+            <Piste refSvg={refPisteSvgV} refTrace={refPisteTraceV} orientation="verticale" />
+          </>
+        )}
 
         {panneaux.map((panneau, indice) => (
           <div

@@ -153,23 +153,47 @@ L'effet signature. C'est ici que le site devient le tien.
       DrawSVG, cascade bornée à `DUR.base` par `stagger.amount`.
 - [x] Les 4 éléments en tirets révélés à l'opacité, détectés automatiquement.
 
-### 4b — Les mécanismes propres à chaque bloc *(reste à faire)*
+### 4b — Les mécanismes propres à chaque bloc *(partiellement fait)*
 
-C'est le gros du travail, et il est déjà spécifié : **`CONTENU.md` donne, bloc par bloc, le
-mécanisme d'apparition**. Aucun n'est à inventer.
+Aucun n'est inventé : **`CONTENU.md` les donne bloc par bloc**, c'est la source.
 
-- [ ] Les 12 mécanismes, un par un, validés un par un. Rappel de quelques-uns :
-      01 le nom se compose **par sédimentation** (interdit : fondu + glissement) ·
-      02 l'arc **s'amorce**, allumage franc en `EASE.strong` ·
-      03 les impuretés partent **une par une** (`STAGGER`), compteur `98 %` → `9N` en HTML ·
-      04 le lingot **monte** — seul mouvement vertical du site (§7) ·
-      07 le texte est **insolé** par `clip-path`, jamais par `opacity` (§7) ·
-      08 la gravure **retire** de la matière, seule animation soustractive du site.
-- [ ] **Un seul ★ par page.** Les 8 blocs non-★ restent sobres : ils apparaissent, ils ne se
-      donnent pas en spectacle.
-- [ ] **Le tracé vertical en mobile.** Sous 768 px le rail est une pile (décision de phase 3) :
-      la piste doit s'y tracer de haut en bas. Elle est actuellement masquée.
-- [ ] La figure « fab en construction » du bloc 12 — **à dessiner par toi**, Inkscape, §8.
+- [x] **Les 12 mécanismes côté figure**, un par bloc, dans `lib/mecanismes.ts` :
+      01 les grains se déposent · 02 l'arc s'amorce (plein, coupé, plein — pas une rampe) ·
+      03 les impuretés sortent une par une · 04 la tige **monte** et le lingot se trace derrière
+      elle · 05 un fil, une tranche, un fil, une tranche · 06 le disque tourne, le trait passe
+      de tremblé à net · 07 le masque descend, le flash part · 08 le creux **s'ouvre depuis son
+      milieu** (`drawSVG: "50% 50%"` → `"0% 100%"`) · 09 les ions s'implantent, les caissons
+      apparaissent en dernier · 10 les pointes descendent, les dies validées s'allument ·
+      11 les saignées passent, une puce glisse hors du wafer · 12 les fils de bonding se tracent.
+- [x] **Les mécanismes de texte que `CONTENU.md` spécifie sans liste** :
+      01 **sédimentation** — SplitText découpe en lignes puis en glyphes, les lignes sont
+      clippées, les glyphes tombent *dedans*. Aucune opacité : c'est du transport de matière ·
+      02 le texte **est là** à l'amorçage (durée 0,001 s, il ne glisse pas) ·
+      03 le compteur **98 % → 9N** en HTML, par paliers (`snap`), jamais en `<text>` SVG ·
+      07 ★ **insolation par `clip-path`** — `inset(0% 100% 0 0)` → `inset(0)`, l'opacité reste
+      à 1 d'un bout à l'autre, sinon c'est un fondu et l'idée forte de la page tombe.
+- [x] **Le tracé vertical en mobile.** Sous 768 px la piste part du haut et descend le long du
+      bord du texte. Le conteneur n'étant pas épinglé, elle a son propre ScrollTrigger — le
+      piège n°1 du §6.4 ne concerne qu'un élément épinglé.
+- [x] **Un seul ★ par page** : 01, 04, 07, 10. Les 8 autres blocs gardent un texte statique —
+      `CONTENU.md` ne leur prescrit aucun mécanisme de texte, et « les blocs non-★ apparaissent,
+      ils ne se donnent pas en spectacle ».
+
+#### Ce qui reste, et pourquoi ça ne peut pas être fait maintenant
+
+- [ ] **La mise en scène des listes** — blocs 04, 05, 09, 10, 11, 12. `CONTENU.md` dit « chaque
+      habitude s'inscrit au fur et à mesure » (04), « une tranche devient la carte d'un
+      objectif » (05), « chaque impact allume une compétence » (09), « chaque puce validée
+      devient la vignette d'un projet » (10), « une puce glisse hors du wafer : c'est le lien
+      vers tous les projets » (11), « quatre liens » (12). **Ces listes n'existent pas encore**
+      — elles sont marquées « ⧖ à fournir » et attendent la phase 6, et la règle 6 de
+      `CONTENU.md` interdit d'y mettre du faux texte en attendant.
+      👉 À reprendre **juste après** la phase 6, pas avant. Le côté figure, lui, est fini et ne
+      sera pas refait : il suffira d'accrocher les items sur les timelines existantes.
+- [ ] **La figure « fab en construction » du bloc 12** — à dessiner par toi (Inkscape, §8).
+      C'est le fond du bloc contact, ce n'est pas une étape de procédé.
+- [ ] Le lien « tous les projets » du bloc 11 doit répondre **au clavier exactement comme au
+      clic** (§9.2). Il n'existe pas encore : même blocage que ci-dessus.
 
 **Critères de sortie**
 - [x] Le tracé arrive **exactement** à 100 % en fin de rail, pas à 92 %. ← mesuré : pointe à
@@ -180,14 +204,18 @@ mécanisme d'apparition**. Aucun n'est à inventer.
 - [x] Les éléments en tirets ne passent pas par DrawSVG.
 - [x] Le contenu survit sans animation : en mode « animations réduites », les 12 figures sont
       intégralement visibles et aucune n'est masquée par un état de départ.
+- [x] Les 4 éléments en tirets ont **gardé leurs tirets** après animation (`5px, 4px`
+      mesurés sur `f09-caisson-1/2` et `f12-puce`) — la preuve que DrawSVG ne les a pas touchés.
+- [x] Le mode « animations réduites » ne découpe pas le titre par SplitText, ne clippe aucun
+      texte, et laisse les 12 figures entièrement visibles.
 - [ ] Vérifié sur **Firefox** — la longueur des `<path>` y est parfois mal calculée ; le
       contournement documenté est de viser 102 % au lieu de 100 %. ← à faire par toi.
 - [ ] Vérifié sur **Safari**. ← à faire par toi.
 
-> **Banc de vérification de la phase 4** : 18 contrôles automatisés (géométrie de la piste,
-> position du front au repos et en fin de rail, redimensionnement, révélation des figures,
-> éléments en tirets, mode réduit, mobile). Tous au vert le 2026-09-22, sur Chromium
-> uniquement — d'où les deux lignes Firefox/Safari ci-dessus.
+> **Banc de vérification** : 81 contrôles automatisés au total — 23 sur le rail (phase 3),
+> 18 sur la piste (4a), 40 sur les mécanismes, le tracé mobile et le mode réduit (4b). Tous au
+> vert le 2026-09-22, **sur Chromium uniquement** — d'où les deux lignes Firefox/Safari
+> ci-dessus, et les 60 fps qui restent à mesurer à la main.
 
 ## Phase 5 — Transitions de page · ~1 semaine
 
@@ -259,7 +287,7 @@ Tout le détail est dans **QUALITY.md**. Résumé des portes :
 | P1 Prototype | 2026-09-10 | 2026-09-10 | Close. `scrub: 0.3`, `ease: "none"`, 60 fps / pire image 17 ms. Décisions reportées au §7 du CLAUDE.md. Les deux fichiers de `proto/` sont jetables : ils meurent en phase 2. |
 | P2 Socle | 2026-09-10 | 2026-09-11 | Vite 8 + React 19.2 + TS 6 strict + Tailwind v4. `npm run check` vert, test du carré validé. En ligne sur `v4.teovidal.eu` (Pi 5, Docker/GHCR/Watchtower, tunnel Cloudflare). Reste à confirmer le déploiement automatique de bout en bout. |
 | P3 Rail | 2026-09-22 | | Mécanique close et vérifiée au banc (23/23). Décision mobile : pile verticale sous 768 px. Correction du §6.4 : la course se mesure en `clientWidth`, pas en `innerWidth` (barre de défilement). **Restent deux mesures manuelles : 60 fps et le vrai téléphone.** |
-| P4 Piste | 2026-09-22 | | **Phase réécrite** : les items « lueur / électrons / nœuds / R1-C4-U2 » étaient des restes du concept PCB. Socle (4a) fait et vérifié au banc (18/18) : figures nettoyées 109→15,5 Ko, piste tracée en front, révélations branchées en `containerAnimation`. Reste 4b : les 12 mécanismes de CONTENU.md, le tracé vertical mobile, la figure du bloc 12. |
+| P4 Piste | 2026-09-22 | | **Phase réécrite** : les items « lueur / électrons / nœuds / R1-C4-U2 » étaient des restes du concept PCB. Socle (4a) fait et vérifié au banc (18/18) : figures nettoyées 109→15,5 Ko, piste tracée en front, révélations branchées en `containerAnimation`. 4b fait pour tout ce qui ne dépend pas du contenu : les 12 mécanismes côté figure, la sédimentation (01), l'amorçage (02), le compteur 98 %→9N (03), l'insolation par `clip-path` (07), le tracé vertical mobile. **Reste la mise en scène des listes (04, 05, 09, 10, 11, 12), bloquée par la phase 6**, et la figure du bloc 12. Banc : 81/81. |
 | P5 Transitions | | | |
 | P6 Contenu | | | |
 | P7 Qualité | | | |

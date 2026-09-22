@@ -42,6 +42,10 @@ export const HAUTEUR_PISTE = 0.68;
     dans `lib/procede.ts`. Mettre 0 pour partir d'une page vierge. */
 export const AVANCE_PISTE = 0.5;
 
+/** Marge gauche de la piste verticale (mobile), en pixels. Alignee sur
+    le `px-6` des panneaux pour que la ligne suive le bord du texte. */
+export const MARGE_PISTE = 24;
+
 /** Epaisseur de trait commune a la piste ET aux 12 figures (CLAUDE.md §8 :
     "la piste est une seule ligne ; deux epaisseurs = deux objets"). */
 export const TRAIT = 2.4;
