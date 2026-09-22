@@ -1,8 +1,11 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router";
 import { Nav } from "@/components/layout/Nav";
 import { TransitionPages } from "@/components/layout/TransitionPages";
 import { demarrerLenis, arreterLenis } from "@/lib/lenis";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { PARCOURS, indiceDe } from "@/lib/parcours";
+import { titreDePage } from "@/content/site";
 
 /* ---------------------------------------------------------------------
    Coquille persistante : le fond, la navigation et le defilement lisse
@@ -31,6 +34,16 @@ export function Shell() {
     demarrerLenis();
     return () => arreterLenis();
   }, [animationsReduites]);
+
+  /* Le titre de l'onglet suit la page (phase 6). Utile a tout le monde,
+     indispensable a un lecteur d'ecran : dans une SPA, le navigateur ne
+     recharge rien, et c'est ce titre qui dit « tu as change de page ».
+     La page d'accueil (indice 0) garde le titre complet du site. */
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const indice = indiceDe(pathname);
+    document.title = titreDePage(indice > 0 ? (PARCOURS[indice]?.libelle ?? null) : null);
+  }, [pathname]);
 
   return (
     <div className="bg-ground text-ink min-h-screen">

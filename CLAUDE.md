@@ -128,7 +128,7 @@ src/
 │   └── usePrefersReducedMotion.ts
 ├── components/
 │   ├── layout/              # Shell, Nav, TransitionPages, Liaison
-│   ├── rail/                # Rail, Panneau, IndicateurRail
+│   ├── rail/                # Rail, Panneau, IndicateurRail, Entrees, Liens
 │   ├── process/             # Piste, Figure, figures.ts (les 12 imports svgr)
 │   └── ui/                  # Suivant (la flèche de fin de rail), primitives
 ├── pages/
@@ -137,6 +137,8 @@ src/
 │   ├── Experience.tsx
 │   └── Projets.tsx
 ├── content/                 # ⚠️ données séparées du rendu
+│   ├── types.ts             # le contrat : Bloc, Entree, Fiche, Lien (phase 6)
+│   ├── site.ts              # nom, titre d'onglet — recopiés dans index.html
 │   ├── etapes.ts            # les 12 étapes du procédé (structure, figée en P0)
 │   ├── presentation.ts
 │   ├── objectifs.ts
@@ -158,11 +160,17 @@ par des attributs `data-*`. Les renommer casse un mécanisme sans que TypeScript
 | `data-texte` | le paragraphe | 02 |
 | `data-insole` | la zone de texte entière | 07 ★, révélation par `clip-path` |
 | `data-compteur` | le compteur `mono` | 03, 98 % → 9N |
-| `data-panneau="2"` | l'enveloppe de panneau du rail | défilement au focus clavier (§9.2) |
+| `data-panneau="2"` | l'enveloppe de panneau du rail | défilement au focus clavier (§9.2) ; le retrait `pb-14` de la colonne droite du dernier panneau (la flèche « suivant ») |
+| `data-entree="04-1"` | chaque `<li>` d'une liste de bloc | point d'accroche de la mise en scène des listes (dette 4b) |
 | `data-piste="horizontale"` | le `<svg>` de la piste | `pointeDeLaPiste()` y lit où le trait s'est arrêté, pour que la transition reprenne au bon endroit |
 | `data-liaison` | le `<svg>` fixe de la coquille | le trait qui relie deux pages pendant une transition (§6.6) |
 
 **Règle du `content/` :** aucun texte de contenu en dur dans un composant. Tout passe par un tableau typé dans `content/`. Ça me permet de changer le contenu sans toucher aux animations.
+
+**Règle du brouillon (phase 6) :** un texte rédigé par Claude porte `brouillon: true` sur son
+bloc, et n'utilise que des faits que j'ai donnés. Ce qui relève de mon ressenti (accroche,
+déclic, habitudes, travail en équipe) **reste vide** plutôt que d'être inventé. La pastille
+« brouillon » n'existe qu'en `npm run dev`. C'est moi, et moi seul, qui passe un bloc à `false`.
 
 ---
 
