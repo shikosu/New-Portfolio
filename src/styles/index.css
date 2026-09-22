@@ -84,6 +84,16 @@
     outline-offset: 3px;
   }
 
+  /* Enveloppe de ligne posee par SplitText (bloc 01, sedimentation).
+     overflow:hidden pour que les glyphes tombent DANS la ligne au lieu
+     d'arriver par-dessus le paragraphe. Le padding/margin compense le
+     rognage des jambages (g, y, p) que provoque overflow:hidden. */
+  .ligne-clippee {
+    overflow: hidden;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+  }
+
   /* Filet de securite systeme : si l'utilisateur demande moins
      d'animations, plus rien ne bouge, meme si un composant oublie
      d'appeler usePrefersReducedMotion. */

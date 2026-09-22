@@ -47,6 +47,14 @@ Règles de structure :
 - **L'ordre du procédé est réel, jamais réarrangé pour la mise en page.** En particulier : le four à arc vient *avant* la purification (réduction carbothermique → Si métallurgique 99 %, *puis* procédé Siemens → 9N), et le lingot *monte* (il est tiré hors du bain), il ne coule pas.
 - **Ne pas confondre les deux découpes.** Bloc 05 = *sciage du lingot* → on obtient des wafers. Bloc 11 = *dicing* → on découpe le wafer en puces. Deux étapes, deux figures, deux moments du récit.
 - **Le polissage CMP n'apparaît qu'une fois** (bloc 06). Le réutiliser en page 3 doublonnerait la figure et priverait la page 3 de son ★.
+- **Sous 768 px, le rail n'est plus horizontal** — décidé en phase 3, définitif. Les 3 blocs
+  s'empilent verticalement et le défilement redevient natif. Deux raisons : un défilement
+  horizontal détourné est pénible au doigt, et surtout c'est **exactement le même chemin de
+  code que le mode « animations réduites »** — une seule mécanique à déboguer au lieu de deux.
+  Le seuil vit dans `SEUIL_RAIL` (`hooks/useHorizontalRail.ts`), les classes `md:` du
+  composant `<Rail>` doivent rester alignées dessus.
+  ⚠️ Conséquence : la piste se tracera **de haut en bas** en mobile (phase 4), pas de gauche
+  à droite. Ce n'est pas une dégradation, c'est le même récit sur l'autre axe.
 
 Storyboard détaillé des 12 vignettes — ce qui entre, ce qui sort, dans quel sens, déclenché par quoi :
 `https://claude.ai/code/artifact/077a28a2-2ce5-4a46-a2d8-3613e6d6d437`
@@ -101,17 +109,20 @@ src/
 ├── styles/
 │   ├── index.css            # @import "tailwindcss" + @theme (tokens)
 │   └── fonts.css
+├── vite-env.d.ts            # types des imports `?react` (svgr)
 ├── lib/
 │   ├── gsap.ts              # ⚠️ SEUL endroit où on fait registerPlugin()
 │   ├── lenis.ts             # instance unique + synchro ScrollTrigger
-│   └── motion.ts            # constantes d'animation (durées, eases) — cf. §7
+│   ├── motion.ts            # constantes d'animation + géométrie de la piste — cf. §7
+│   ├── procede.ts           # branchement de la piste et des révélations de figures
+│   └── mecanismes.ts        # LES 12 MÉCANISMES, un par bloc — cf. CONTENU.md
 ├── hooks/
 │   ├── useHorizontalRail.ts
 │   └── usePrefersReducedMotion.ts
 ├── components/
 │   ├── layout/              # Shell, Nav, Footer
-│   ├── rail/                # le défilement horizontal
-│   ├── process/             # piste SVG, figures de procédé, révélations
+│   ├── rail/                # Rail, Panneau, IndicateurRail
+│   ├── process/             # Piste, Figure, figures.ts (les 12 imports svgr)
 │   └── ui/                  # boutons, liens, primitives
 ├── pages/
 │   ├── Presentation.tsx
@@ -119,6 +130,7 @@ src/
 │   ├── Experience.tsx
 │   └── Projets.tsx
 ├── content/                 # ⚠️ données séparées du rendu
+│   ├── etapes.ts            # les 12 étapes du procédé (structure, figée en P0)
 │   ├── presentation.ts
 │   ├── objectifs.ts
 │   ├── experience.ts
@@ -127,6 +139,19 @@ src/
 └── assets/
     └── process/             # les 4 figures de procédé (SVG) — cf. §8
 ```
+
+**Le contrat entre le HTML et les mécanismes.** `lib/mecanismes.ts` ne connaît le panneau que
+par des attributs `data-*`. Les renommer casse un mécanisme sans que TypeScript s'en aperçoive :
+
+| Attribut | Porté par | Utilisé par |
+|---|---|---|
+| `data-etape="07"` | l'`<article>` du panneau | retrouve le mécanisme **et** le préfixe des `id` de sa figure (`f07-`) |
+| `data-figure` | l'enveloppe du SVG | déclencheur ScrollTrigger de la révélation |
+| `data-titre` | le `<h2>` | 01 (sédimentation), 02 (amorçage) |
+| `data-texte` | le paragraphe | 02 |
+| `data-insole` | la zone de texte entière | 07 ★, révélation par `clip-path` |
+| `data-compteur` | le compteur `mono` | 03, 98 % → 9N |
+| `data-panneau="2"` | l'enveloppe de panneau du rail | défilement au focus clavier (§9.2) |
 
 **Règle du `content/` :** aucun texte de contenu en dur dans un composant. Tout passe par un tableau typé dans `content/`. Ça me permet de changer le contenu sans toucher aux animations.
 
@@ -144,7 +169,7 @@ import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 import { useGSAP } from "@gsap/react";
 
-gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, MotionPathPlugin, useGSAP);
+gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin, MotionPathPlugin, SplitText, useGSAP);
 
 export { gsap, ScrollTrigger, useGSAP };
 ```
@@ -176,9 +201,28 @@ Les mots-clés de position changent d'axe : `start: "left center"` et non `"top 
 
 Le déclencheur doit être un élément **qui se déplace avec le conteneur**, et jamais le conteneur animé lui-même.
 
+⚠️ **Deux pièges mesurés en phase 4, à ne pas ré-apprendre :**
+
+1. **Ne jamais poser un second ScrollTrigger sur l'élément que le rail `pin`.** La piste avait
+   d'abord le sien, avec les mêmes `start`/`end` que le rail : elle n'a pas bougé d'un pixel.
+   Pendant le défilement, le conteneur épinglé passe en `position: fixed` dans un pin-spacer,
+   et un autre ScrollTrigger qui le vise mesure des positions qui n'ont plus de sens. Tout ce
+   qui doit suivre le rail se pilote depuis le `onUpdate` du rail — une seule horloge.
+2. **Une figure déjà à l'écran au chargement n'a pas d'entrée à jouer.** Dans un
+   `containerAnimation`, les éléments vont de droite à gauche : le bord gauche de la figure du
+   1ᵉʳ panneau a *déjà* dépassé le milieu de l'écran, donc son `start: "left center"` se place
+   avant le début du rail et ne se déclenche jamais. Elle se dessine à l'ouverture de la page,
+   sans ScrollTrigger.
+
 Rappel de dimensionnement, vérifié sur le prototype de phase 1 :
 - `xPercent` est un pourcentage de la largeur de **l'élément animé**. Pour N panneaux de 100vw dans un conteneur de N × 100vw : `xPercent: -100 * (N - 1) / N`.
-- La course de scroll vaut `conteneur.offsetWidth - window.innerWidth`.
+- La course de scroll vaut `piste.offsetWidth - conteneur.clientWidth`.
+  ⚠️ **Corrigé en phase 3 : `clientWidth`, pas `window.innerWidth`.** `innerWidth` inclut la
+  barre de défilement verticale, `clientWidth` non. Sur un PC à barres classiques (~15 px)
+  les deux diffèrent, et la piste finit décalée de 15 px à 100 %. Sur un Mac à barres
+  flottantes l'erreur est invisible — donc invérifiable sur ma machine. Pour la même raison,
+  les panneaux sont dimensionnés en **pourcentage du conteneur** (variable CSS `--panneaux`)
+  et jamais en `100vw`, qui souffre du même défaut.
 - Pour qu'une pointe de tracé reste fixe à l'écran, l'étendue horizontale du `<path>` doit **égaler** cette course. Si elle est plus grande, la pointe fuit vers l'avant ; plus petite, elle prend du retard.
 
 ### 6.5 Lenis + ScrollTrigger
@@ -216,6 +260,11 @@ export const EASE = {
 
 export const STAGGER = 0.06;
 
+// Géométrie de la piste (phase 4).
+export const HAUTEUR_PISTE = 0.68; // hauteur dans le panneau, en fraction d'écran
+export const AVANCE_PISTE  = 0.5;  // longueur déjà tracée à l'entrée du rail, en écrans
+export const TRAIT         = 2.4;  // épaisseur commune piste + figures (§8)
+
 // Retard de rattrapage entre la molette et l'animation, en secondes.
 // Mesure de phase 1 (`proto/scrub-lab.html`, 2026-09-10) : 0.3 reste collé au
 // doigt, 1 commence a flotter, 2 devient elastique. 60 fps, pire image 17 ms.
@@ -234,6 +283,17 @@ export const SCRUB = 0.3;
 - La révélation du texte en page 3 se fait par **masque / `clip-path`** (le texte est *insolé*), jamais par `opacity`.
 - Le tirage Czochralski (bloc 04) est le **seul mouvement vertical du site**. S'il est repris ailleurs, il perd sa force.
 - La gravure (bloc 08) est la seule animation qui **retire** de la matière au lieu d'en ajouter. Ce contraste est voulu.
+- **La pointe de la piste est un front, pas une barre de progression.** Elle part du milieu de
+  l'écran à l'entrée du rail et atteint le bord droit exactement à la fin — le contenu arrive
+  par la droite non tracé, franchit le front, et ressort tracé. C'est le convoyeur d'une ligne
+  de fab. Le calcul complet est en tête de `lib/procede.ts` ; les deux réglages sont
+  `HAUTEUR_PISTE` et `AVANCE_PISTE`.
+- **Un bloc sans mécanisme de texte garde un texte statique.** `CONTENU.md` n'en prescrit que
+  pour 01, 02, 03 et 07. Les autres n'en reçoivent pas : « les blocs non-★ apparaissent, ils ne
+  se donnent pas en spectacle ». Ne pas leur inventer une entrée pour « équilibrer ».
+- **La piste n'utilise pas DrawSVG.** C'est une droite : on écrit directement son
+  `stroke-dasharray`, qui est le mécanisme que le plugin emploie de toute façon (toléré par le
+  §7). DrawSVG reste utilisé pour les figures, qui sont courbes.
 
 **Règle de restraint :** un seul moment spectaculaire par page — ils sont désignés dans le tableau du §2. Si une page a trois effets « waouh », elle n'en a aucun.
 
@@ -259,14 +319,24 @@ Contraintes de fabrication du fichier, non négociables :
 **Outil recommandé : Inkscape** (gratuit), export « SVG optimisé ».
 ⚠️ Figma et Illustrator convertissent fréquemment les contours en formes remplies à l'export. Si tu passes par eux, ouvrir le `.svg` dans un éditeur de texte et vérifier qu'on y lit bien `fill="none"` et `stroke=` avant de l'intégrer.
 
-**Les 12 figures existent déjà** dans `assets/process/` (`01-sable.svg` … `12-packaging.svg`) :
-viewBox commun `0 0 400 400`, `stroke-width` 2.4, 148 éléments et 148 `id`, aucun `<text>`,
-aucune transformation matricielle, aucun remplissage. Contrôlées au rendu, sans recouvrement
-ni géométrie impossible. Elles se déplaceront dans `src/assets/process/` en phase 2.
+**Les 12 figures sont dans `src/assets/process/`** (`01-sable.svg` … `12-packaging.svg`) :
+viewBox commun `0 0 400 400`, `stroke-width` 2.4, **177 éléments et 177 `id`**, aucun `<text>`,
+aucune transformation matricielle, aucun remplissage, aucun chemin multi-`M`.
 
-⚠️ **Trois éléments sont en tirets** — `caisson-1`/`caisson-2` (09), `emplacement-libere` (11),
-`puce` (12). Ne pas les animer avec DrawSVG : le plugin pilote `stroke-dasharray` et écraserait
-les tirets. Les révéler à l'opacité.
+Deux passes faites en phase 4, à refaire sur toute nouvelle figure :
+
+- **Nettoyage.** Chaque fichier portait un manifeste C2PA de 7 736 octets — **84 % du poids
+  pour 0 trait**. Total : 109 Ko → 15,5 Ko. C'est la règle SVGO du tableau ci-dessus.
+- **Préfixage des `id`.** `grain-1` est devenu `f01-grain-1`. Sans ça, `substrat` existait à la
+  fois dans 07 et 09, et `die-01` dans 10 et 11 : deux éléments du même `id` dans la page, donc
+  du HTML invalide et des sélecteurs `#id` qui attrapent le mauvais. Toute nouvelle figure
+  prend le préfixe `fNN-`.
+
+⚠️ **Quatre éléments sont en tirets** — `f09-caisson-1`, `f09-caisson-2`, `f11-emplacement-libere`,
+`f12-puce`. Ne pas les animer avec DrawSVG : le plugin pilote `stroke-dasharray` et écraserait
+les tirets. Ils sont révélés à l'opacité, et **détectés automatiquement** par la présence de
+l'attribut `stroke-dasharray` (`lib/procede.ts`) — pas par une liste d'`id` à tenir à jour.
+Une nouvelle figure en tirets est donc prise en charge toute seule.
 
 Reste à produire : le fond « fab en construction » du bloc 12, qui n'est pas une étape de procédé.
 
