@@ -1,25 +1,28 @@
 import { NavLink } from "react-router";
+import { PARCOURS, precharger } from "@/lib/parcours";
 
-/* Navigation persistante. Les 4 etapes du parcours, numerotees comme les
-   figures de procede. En phase 5, cette barre ne sera PAS remontee entre
-   deux pages : seul le contenu est remplace. */
+/* Navigation persistante : cette barre n'est PAS remontee entre deux
+   pages, seul le contenu l'est (ROADMAP phase 5).
 
-const ETAPES = [
-  { to: "/", libelle: "Presentation", repere: "01" },
-  { to: "/objectifs", libelle: "Objectifs", repere: "04" },
-  { to: "/experience", libelle: "Experience", repere: "07" },
-  { to: "/projets", libelle: "Projets", repere: "10" },
-] as const;
+   Les 4 etapes viennent de `lib/parcours.ts` et non d'une liste locale :
+   c'est la meme source qui donne l'ordre du procede, donc le SENS d'une
+   transition. Deux listes, et le jour ou l'ordre change, la fleche et la
+   barre ne diraient plus la meme chose.
+
+   Survol et focus declenchent le prechargement du morceau de code de la
+   page visee, comme la fleche de fin de rail. */
 
 export function Nav() {
   return (
     <nav aria-label="Parcours" className="fixed top-0 right-0 left-0 z-50">
       <ul className="flex gap-6 px-6 py-4">
-        {ETAPES.map(({ to, libelle, repere }) => (
-          <li key={to}>
+        {PARCOURS.map(({ chemin, libelle, repere }) => (
+          <li key={chemin}>
             <NavLink
-              to={to}
-              end={to === "/"}
+              to={chemin}
+              end={chemin === "/"}
+              onMouseEnter={() => void precharger(chemin)}
+              onFocus={() => void precharger(chemin)}
               className={({ isActive }) =>
                 [
                   "text-mono font-mono uppercase transition-colors",

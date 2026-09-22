@@ -4,6 +4,7 @@ import { useHorizontalRail } from "@/hooks/useHorizontalRail";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { IndicateurRail } from "@/components/rail/IndicateurRail";
 import { Piste } from "@/components/process/Piste";
+import { HAUTEUR_PISTE } from "@/lib/motion";
 
 /* =====================================================================
    <Rail> — recoit des panneaux, les fait defiler horizontalement.
@@ -45,9 +46,16 @@ interface ProprietesRail {
   readonly children: ReactNode;
   /** Nom de la region pour les lecteurs d'ecran. */
   readonly libelle: string;
+  /**
+   * Le lien vers l'etape suivante (phase 5). Il est pose DANS le dernier
+   * panneau, a droite, sur la piste : on le rencontre en finissant la
+   * page, exactement la ou la piste sort par le bord droit. Absent sur la
+   * derniere page du parcours.
+   */
+  readonly suivant?: ReactNode;
 }
 
-export function Rail({ children, libelle }: ProprietesRail) {
+export function Rail({ children, libelle, suivant }: ProprietesRail) {
   const panneaux = Children.toArray(children);
   const total = panneaux.length;
 
@@ -81,8 +89,8 @@ export function Rail({ children, libelle }: ProprietesRail) {
     : "relative flex flex-col md:h-screen md:w-[calc(var(--panneaux)*100%)] md:flex-row md:flex-nowrap";
 
   const classesPanneau = empile
-    ? "min-h-screen w-full"
-    : "min-h-screen w-full md:h-screen md:min-h-0 md:w-[calc(100%/var(--panneaux))] md:shrink-0";
+    ? "relative min-h-screen w-full"
+    : "relative min-h-screen w-full md:h-screen md:min-h-0 md:w-[calc(100%/var(--panneaux))] md:shrink-0";
 
   return (
     <section
@@ -110,6 +118,20 @@ export function Rail({ children, libelle }: ProprietesRail) {
             className={classesPanneau}
           >
             {panneau}
+
+            {/* Le lien vers l'etape suivante, pose juste au-dessus de la
+                piste : `bottom` vaut la hauteur restante sous elle,
+                (1 - HAUTEUR_PISTE), plus une respiration d'un cran. La
+                valeur vient de la meme constante que la piste — on ne
+                peut pas deplacer l'une sans l'autre. */}
+            {suivant && indice === total - 1 && (
+              <div
+                className="absolute right-6 z-30 md:right-16"
+                style={{ bottom: `calc(${(1 - HAUTEUR_PISTE) * 100}% + 1.5rem)` }}
+              >
+                {suivant}
+              </div>
+            )}
           </div>
         ))}
       </div>

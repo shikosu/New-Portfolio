@@ -94,6 +94,19 @@
     margin-bottom: -0.14em;
   }
 
+  /* Scene figee pendant une transition de page (phase 5, lib/transition.ts).
+     `position: fixed` sort la page du flux SANS creer de bloc conteneur
+     pour les descendants fixes — le rail epingle reste donc exactement
+     ou il est. Le `transform` que GSAP ajoute ensuite, lui, en cree un,
+     mais la boite de la scene EST alors la fenetre : aucun decalage.
+     C'est une regle de MECANIQUE, pas de style, d'ou sa presence ici et
+     non dans une classe utilitaire posee au hasard d'un composant. */
+  .scene-figee {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+  }
+
   /* Filet de securite systeme : si l'utilisateur demande moins
      d'animations, plus rien ne bouge, meme si un composant oublie
      d'appeler usePrefersReducedMotion. */

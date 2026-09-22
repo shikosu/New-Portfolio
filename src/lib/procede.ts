@@ -311,3 +311,40 @@ export function brancherFigures({ conteneur, animation }: OptionsFigures): () =>
     for (const nettoyer of nettoyages) nettoyer();
   };
 }
+
+// ---------------------------------------------------------------------
+// 3. OU EST LA POINTE ? (utilise par la transition de page, phase 5)
+// ---------------------------------------------------------------------
+
+/**
+ * Position de la pointe de la piste horizontale, en pixels d'ecran.
+ *
+ * La transition de page en a besoin pour demarrer sa liaison exactement
+ * la ou la piste s'est arretee. Si on partait toujours du bord droit, un
+ * clic depuis le haut d'une page (ou la piste n'est tracee qu'a moitie)
+ * ferait apparaitre un trait pleine largeur d'un seul coup.
+ *
+ * Le calcul tient en une ligne parce que le `viewBox` de la piste est
+ * pose en PIXELS et couvre tout le convoyeur : la longueur tracee, qui
+ * est le premier nombre du `stroke-dasharray`, est donc deja une
+ * distance en pixels, comptee depuis le bord gauche du convoyeur.
+ *
+ *     pointe a l'ecran = longueur tracee + bord gauche du convoyeur
+ *                                          (negatif des que ca defile)
+ *
+ * Rend `null` s'il n'y a pas de piste horizontale a l'ecran : sous
+ * 768 px, ou en mode "animations reduites". Dans ces deux cas la phase 5
+ * bascule instantanement, donc l'appelant n'en a pas l'usage.
+ */
+export function pointeDeLaPiste(racine: ParentNode = document): number | null {
+  const trace = racine.querySelector<SVGPathElement>('[data-piste="horizontale"] > path');
+  if (!trace) return null;
+
+  const svg = trace.ownerSVGElement;
+  if (!svg) return null;
+
+  const tracee = Number.parseFloat(trace.style.strokeDasharray);
+  if (!Number.isFinite(tracee)) return null;
+
+  return tracee + svg.getBoundingClientRect().left;
+}
