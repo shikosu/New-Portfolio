@@ -93,18 +93,36 @@ Aucune ligne de code. C'est la phase que tout le monde saute et qui coûte trois
 
 C'est le squelette de navigation de tout le site.
 
-- [ ] Composant `<Rail>` réutilisable : reçoit des enfants, les fait défiler horizontalement
-- [ ] Hook `useHorizontalRail` : gère le `pin`, le `scrub`, le recalcul au redimensionnement
-- [ ] `invalidateOnRefresh: true` et `end` calculé par fonction
-- [ ] Indicateur de progression (où suis-je dans le rail ?)
-- [ ] Comportement mobile décidé et implémenté (voir encadré)
-- [ ] Mode « animations réduites » : le rail devient une liste verticale classique
+- [x] Composant `<Rail>` réutilisable : reçoit des enfants, les fait défiler horizontalement
+- [x] Hook `useHorizontalRail` : gère le `pin`, le `scrub`, le recalcul au redimensionnement
+- [x] `invalidateOnRefresh: true` et `end` calculé par fonction
+- [x] Indicateur de progression : compteur mono `01 / 03` + filet dont la portion encrée
+      avance en `scaleX`. Écrit directement dans le DOM par `quickSetter`, **sans state
+      React** — 60 rendus React par seconde feraient tomber le site sous les 60 fps.
+- [x] Comportement mobile décidé et implémenté → **pile verticale sous 768 px**, consigné
+      au §2 du CLAUDE.md.
+- [x] Mode « animations réduites » : le rail devient une liste verticale classique
 
 **Critères de sortie**
-✅ Redimensionner la fenêtre en plein défilement ne casse rien.
-✅ ⇥ au clavier fait défiler le rail jusqu'à l'élément ciblé.
-✅ 60 fps tenus sur toute la longueur du rail.
-✅ Testé sur un vrai téléphone, pas seulement dans l'émulateur DevTools.
+- [x] Redimensionner la fenêtre en plein défilement ne casse rien. ← vérifié au banc : passage
+      1440 → 1000 px **pendant** le scrub, la piste est re-mesurée (3000 = 3 × 1000) et le rail
+      finit quand même pile à −2000 px. Aucune erreur JS.
+- [x] ⇥ au clavier fait défiler le rail jusqu'à l'élément ciblé. ← vérifié : le focus atteint
+      le 3ᵉ panneau, le rail défile à −2560 px, `scrollLeft` du conteneur reste à 0 (c'est la
+      tentative du navigateur qu'on annule), le contour de focus est visible.
+- [x] Le tracé arrive **exactement** à 100 %. ← mesuré : translation finale −2560 px pour une
+      largeur de 1280 px et 3 panneaux, soit −(N−1) × largeur au pixel près ; le bord droit du
+      dernier panneau tombe sur 1280 = bord de l'écran.
+- [ ] 60 fps tenus sur toute la longueur du rail. ← **à mesurer par moi** dans l'onglet
+      Performance, sur le build (`npm run preview`), pas en dev.
+- [ ] Testé sur un vrai téléphone, pas seulement dans l'émulateur DevTools. ← **à faire par moi.**
+      Le banc confirme la pile verticale en 390 × 844 (aucune translation, indicateur masqué),
+      mais un émulateur ne dit rien du confort au doigt.
+
+> **Banc de vérification de la phase 3** : 23 contrôles automatisés dans un navigateur réel
+> (bureau 1280, redimensionnement à chaud, mobile 390, `prefers-reduced-motion`, clavier).
+> Tous au vert le 2026-09-22. Ils mesurent la mécanique, pas le ressenti — d'où les deux
+> critères ci-dessus qui restent manuels.
 
 > **Le mobile, décision à prendre ici et pas plus tard.** Un défilement horizontal détourné est souvent pénible au doigt. Deux options honnêtes : (a) sur < 768 px, le rail devient une pile verticale et le circuit se trace de haut en bas ; (b) le rail devient un carrousel à balayage natif. Choisis, écris-le dans CLAUDE.md, et tiens-t'y.
 
@@ -114,7 +132,11 @@ C'est le squelette de navigation de tout le site.
 
 L'effet signature. C'est ici que le site devient le tien.
 
-- [ ] SVG KiCad intégré et découpé en segments animables (un `<path>` par piste)
+- [ ] Figures de procédé intégrées et découpées en segments animables (un `<path>` par
+      élément) — ⚠️ « SVG KiCad » était un reste du concept PCB abandonné en phase 0 ;
+      les fichiers sont dans `src/assets/process/` (§8 du CLAUDE.md).
+- [ ] Brancher les ScrollTriggers des figures sur `refAnimationConteneur` du rail
+      (`containerAnimation`), et **`start: "left center"`**, jamais `"top center"` (§6.4).
 - [ ] Tracé progressif synchronisé au rail (`containerAnimation` + `drawSVG`)
 - [ ] Lueur : filtre `feGaussianBlur` sur un calque dupliqué (**pas** de `box-shadow` animé)
 - [ ] Électrons : points lumineux en boucle sur `MotionPath`
@@ -198,7 +220,7 @@ Tout le détail est dans **QUALITY.md**. Résumé des portes :
 | P0 Cadrage | 2026-09-10 | 2026-09-10 | Concept réorienté : ligne de fab au lieu du circuit imprimé. CLAUDE.md §1, §2, §8, §10 réécrits. Carte contenu figée dans `CONTENU.md`. Reste le critère oral. |
 | P1 Prototype | 2026-09-10 | 2026-09-10 | Close. `scrub: 0.3`, `ease: "none"`, 60 fps / pire image 17 ms. Décisions reportées au §7 du CLAUDE.md. Les deux fichiers de `proto/` sont jetables : ils meurent en phase 2. |
 | P2 Socle | 2026-09-10 | 2026-09-11 | Vite 8 + React 19.2 + TS 6 strict + Tailwind v4. `npm run check` vert, test du carré validé. En ligne sur `v4.teovidal.eu` (Pi 5, Docker/GHCR/Watchtower, tunnel Cloudflare). Reste à confirmer le déploiement automatique de bout en bout. |
-| P3 Rail | | | |
+| P3 Rail | 2026-09-22 | | Mécanique close et vérifiée au banc (23/23). Décision mobile : pile verticale sous 768 px. Correction du §6.4 : la course se mesure en `clientWidth`, pas en `innerWidth` (barre de défilement). **Restent deux mesures manuelles : 60 fps et le vrai téléphone.** |
 | P4 Circuit | | | |
 | P5 Transitions | | | |
 | P6 Contenu | | | |

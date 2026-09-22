@@ -1,5 +1,6 @@
 import Lenis from "lenis";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
+import { DUR } from "@/lib/motion";
 
 /* ---------------------------------------------------------------------
    Instance UNIQUE de Lenis (CLAUDE.md §6.5).
@@ -44,4 +45,22 @@ export function arreterLenis(): void {
   instance?.destroy();
   instance = null;
   boucle = null;
+}
+
+/* ---------------------------------------------------------------------
+   Defilement programme (utilise par le rail quand la tabulation amene le
+   focus sur un panneau hors ecran, CLAUDE.md §9.2).
+
+   Pourquoi passer par ici plutot que window.scrollTo : si Lenis tourne,
+   c'est lui qui detient la position courante. Un window.scrollTo direct
+   la change dans le dos de Lenis, qui la corrige a l'image suivante —
+   on voit un aller-retour. Si Lenis ne tourne pas (mode "animations
+   reduites"), on retombe sur le defilement natif, instantane.
+   --------------------------------------------------------------------- */
+export function defilerVers(y: number): void {
+  if (instance) {
+    instance.scrollTo(y, { duration: DUR.base });
+    return;
+  }
+  window.scrollTo({ top: y, behavior: "auto" });
 }

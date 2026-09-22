@@ -47,6 +47,14 @@ Règles de structure :
 - **L'ordre du procédé est réel, jamais réarrangé pour la mise en page.** En particulier : le four à arc vient *avant* la purification (réduction carbothermique → Si métallurgique 99 %, *puis* procédé Siemens → 9N), et le lingot *monte* (il est tiré hors du bain), il ne coule pas.
 - **Ne pas confondre les deux découpes.** Bloc 05 = *sciage du lingot* → on obtient des wafers. Bloc 11 = *dicing* → on découpe le wafer en puces. Deux étapes, deux figures, deux moments du récit.
 - **Le polissage CMP n'apparaît qu'une fois** (bloc 06). Le réutiliser en page 3 doublonnerait la figure et priverait la page 3 de son ★.
+- **Sous 768 px, le rail n'est plus horizontal** — décidé en phase 3, définitif. Les 3 blocs
+  s'empilent verticalement et le défilement redevient natif. Deux raisons : un défilement
+  horizontal détourné est pénible au doigt, et surtout c'est **exactement le même chemin de
+  code que le mode « animations réduites »** — une seule mécanique à déboguer au lieu de deux.
+  Le seuil vit dans `SEUIL_RAIL` (`hooks/useHorizontalRail.ts`), les classes `md:` du
+  composant `<Rail>` doivent rester alignées dessus.
+  ⚠️ Conséquence : la piste se tracera **de haut en bas** en mobile (phase 4), pas de gauche
+  à droite. Ce n'est pas une dégradation, c'est le même récit sur l'autre axe.
 
 Storyboard détaillé des 12 vignettes — ce qui entre, ce qui sort, dans quel sens, déclenché par quoi :
 `https://claude.ai/code/artifact/077a28a2-2ce5-4a46-a2d8-3613e6d6d437`
@@ -178,7 +186,13 @@ Le déclencheur doit être un élément **qui se déplace avec le conteneur**, e
 
 Rappel de dimensionnement, vérifié sur le prototype de phase 1 :
 - `xPercent` est un pourcentage de la largeur de **l'élément animé**. Pour N panneaux de 100vw dans un conteneur de N × 100vw : `xPercent: -100 * (N - 1) / N`.
-- La course de scroll vaut `conteneur.offsetWidth - window.innerWidth`.
+- La course de scroll vaut `piste.offsetWidth - conteneur.clientWidth`.
+  ⚠️ **Corrigé en phase 3 : `clientWidth`, pas `window.innerWidth`.** `innerWidth` inclut la
+  barre de défilement verticale, `clientWidth` non. Sur un PC à barres classiques (~15 px)
+  les deux diffèrent, et la piste finit décalée de 15 px à 100 %. Sur un Mac à barres
+  flottantes l'erreur est invisible — donc invérifiable sur ma machine. Pour la même raison,
+  les panneaux sont dimensionnés en **pourcentage du conteneur** (variable CSS `--panneaux`)
+  et jamais en `100vw`, qui souffre du même défaut.
 - Pour qu'une pointe de tracé reste fixe à l'écran, l'étendue horizontale du `<path>` doit **égaler** cette course. Si elle est plus grande, la pointe fuit vers l'avant ; plus petite, elle prend du retard.
 
 ### 6.5 Lenis + ScrollTrigger
