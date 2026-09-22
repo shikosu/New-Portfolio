@@ -3,6 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { useHorizontalRail } from "@/hooks/useHorizontalRail";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { IndicateurRail } from "@/components/rail/IndicateurRail";
+import { Piste } from "@/components/process/Piste";
 
 /* =====================================================================
    <Rail> — recoit des panneaux, les fait defiler horizontalement.
@@ -53,12 +54,16 @@ export function Rail({ children, libelle }: ProprietesRail) {
   const animationsReduites = usePrefersReducedMotion();
   const refFilet = useRef<HTMLSpanElement>(null);
   const refCompteur = useRef<HTMLSpanElement>(null);
+  const refPisteSvg = useRef<SVGSVGElement>(null);
+  const refPisteTrace = useRef<SVGPathElement>(null);
 
-  const { refConteneur, refPiste } = useHorizontalRail({
+  const { refConteneur, refConvoyeur } = useHorizontalRail({
     nombreDePanneaux: total,
     animationsReduites,
     refFilet,
     refCompteur,
+    refPisteSvg,
+    refPisteTrace,
   });
 
   // En mode "animations reduites", le rail redevient une simple pile,
@@ -67,9 +72,9 @@ export function Rail({ children, libelle }: ProprietesRail) {
 
   const classesConteneur = empile ? "relative" : "relative md:h-screen md:overflow-hidden";
 
-  const classesPiste = empile
-    ? "flex flex-col"
-    : "flex flex-col md:h-screen md:w-[calc(var(--panneaux)*100%)] md:flex-row md:flex-nowrap";
+  const classesConvoyeur = empile
+    ? "relative flex flex-col"
+    : "relative flex flex-col md:h-screen md:w-[calc(var(--panneaux)*100%)] md:flex-row md:flex-nowrap";
 
   const classesPanneau = empile
     ? "min-h-screen w-full"
@@ -82,7 +87,11 @@ export function Rail({ children, libelle }: ProprietesRail) {
       className={classesConteneur}
       style={{ "--panneaux": total } as CSSProperties}
     >
-      <div ref={refPiste} className={classesPiste}>
+      <div ref={refConvoyeur} className={classesConvoyeur}>
+        {/* La piste vit DANS le convoyeur : elle se translate avec les
+            panneaux, ce qui fait de sa pointe un front fixe a l'ecran. */}
+        {!empile && <Piste refSvg={refPisteSvg} refTrace={refPisteTrace} />}
+
         {panneaux.map((panneau, indice) => (
           <div
             // `data-panneau` porte l'indice : c'est ce que le hook lit

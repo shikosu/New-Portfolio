@@ -3,12 +3,13 @@ import type { RefObject } from "react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { EASE, SCRUB } from "@/lib/motion";
 import { defilerVers } from "@/lib/lenis";
+import { brancherFigures, brancherPiste } from "@/lib/procede";
 
 /* =====================================================================
    useHorizontalRail — le squelette de navigation du site (ROADMAP P3).
 
    Principe, en une phrase : on epingle (`pin`) une section a l'ecran,
-   et pendant que la molette continue de tourner, on translate une piste
+   et pendant que la molette continue de tourner, on translate un convoyeur
    plus large que l'ecran vers la gauche.
 
    Chronogramme (comme en TP d'electronique numerique) :
@@ -17,7 +18,7 @@ import { defilerVers } from "@/lib/lenis";
                               │                              │
      etat de la section       │◄──── epinglee (pin) ────────►│
                               │                              │
-     translation de la piste  0% ──────────────────────► -(N-1) x largeur
+     translation du convoyeur   0% ──────────────────────► -(N-1) x largeur
 
    La molette n'est PAS un declencheur ici, c'est l'AXE DES TEMPS de
    l'animation. D'ou `ease: "none"` obligatoire (CLAUDE.md §7) : un ease
@@ -44,13 +45,18 @@ interface OptionsRail {
   readonly refFilet: RefObject<HTMLElement | null>;
   /** Le compteur "01" de l'indicateur : on reecrit son texte. */
   readonly refCompteur: RefObject<HTMLElement | null>;
+  /** Le <svg> de la piste (phase 4) : son viewBox est pose en pixels. */
+  readonly refPisteSvg: RefObject<SVGSVGElement | null>;
+  /** Le <path> de la piste : son `d` est pose en pixels, et c'est lui
+      que DrawSVG trace au scrub. */
+  readonly refPisteTrace: RefObject<SVGPathElement | null>;
 }
 
 interface RetourRail {
   /** A poser sur la section epinglee. */
   readonly refConteneur: RefObject<HTMLDivElement | null>;
-  /** A poser sur la piste (la rangee de panneaux, plus large que l'ecran). */
-  readonly refPiste: RefObject<HTMLDivElement | null>;
+  /** A poser sur le convoyeur : la rangee de panneaux, large de N ecrans. */
+  readonly refConvoyeur: RefObject<HTMLDivElement | null>;
   /**
    * Le tween du rail. En phase 4, c'est LUI qu'on passera en
    * `containerAnimation` aux ScrollTriggers des figures de procede :
@@ -66,18 +72,20 @@ export function useHorizontalRail({
   animationsReduites,
   refFilet,
   refCompteur,
+  refPisteSvg,
+  refPisteTrace,
 }: OptionsRail): RetourRail {
   const refConteneur = useRef<HTMLDivElement>(null);
-  const refPiste = useRef<HTMLDivElement>(null);
+  const refConvoyeur = useRef<HTMLDivElement>(null);
   const refAnimationConteneur = useRef<gsap.core.Tween | null>(null);
 
   useGSAP(
     () => {
       const conteneur = refConteneur.current;
-      const piste = refPiste.current;
+      const convoyeur = refConvoyeur.current;
 
-      // Garde-fou : pas de piste, ou un seul panneau -> rien a faire defiler.
-      if (!conteneur || !piste || nombreDePanneaux < 2) return;
+      // Garde-fou : pas de convoyeur, ou un seul panneau -> rien a faire defiler.
+      if (!conteneur || !convoyeur || nombreDePanneaux < 2) return;
       if (animationsReduites) return;
 
       /* -----------------------------------------------------------------
@@ -92,21 +100,21 @@ export function useHorizontalRail({
       mm.add(`(min-width: ${SEUIL_RAIL}px)`, () => {
         /* ---------------------------------------------------------------
            BLOC 2 — la course de defilement
-           Elle doit valoir exactement la distance que la piste parcourt,
+           Elle doit valoir exactement la distance que le convoyeur parcourt,
            sinon le dernier panneau n'arrive jamais au bord (course trop
            courte) ou reste colle avant la fin (course trop longue).
 
-             piste  = N x largeur du conteneur
-             course = piste - 1 x largeur du conteneur = (N-1) x largeur
+             convoyeur  = N x largeur du conteneur
+             course = convoyeur - 1 x largeur du conteneur = (N-1) x largeur
 
            On mesure `conteneur.clientWidth` et non `window.innerWidth` :
            innerWidth INCLUT la barre de defilement verticale. Sur un PC
-           avec barres classiques (~15 px), les deux different, et la piste
+           avec barres classiques (~15 px), les deux different, et le convoyeur
            finirait decalee de 15 px a 100 %. clientWidth est la largeur
            reellement visible. C'est une fonction, pas une valeur figee :
            `invalidateOnRefresh` la rappellera a chaque redimensionnement.
            --------------------------------------------------------------- */
-        const course = () => piste.offsetWidth - conteneur.clientWidth;
+        const course = () => convoyeur.offsetWidth - conteneur.clientWidth;
 
         /* ---------------------------------------------------------------
            BLOC 3 — l'indicateur de progression
@@ -118,7 +126,15 @@ export function useHorizontalRail({
         const filet = refFilet.current;
         const poserEchelle = filet ? gsap.quickSetter(filet, "scaleX") : null;
 
+        /* La piste est pilotee par la progression du rail (voir la lecon
+           en tete de `lib/procede.ts`). On declare la fonction ici, vide,
+           et on la remplit juste apres la creation du tween : `onUpdate`
+           ne tire de toute facon qu'a partir du premier defilement. */
+        let majPiste: ((progression: number) => void) | null = null;
+
         const majIndicateur = (progression: number) => {
+          majPiste?.(progression);
+
           // scaleX : une transformation. Pas `width`, interdit par le §7 —
           // animer width force le navigateur a refaire toute la mise en page
           // a chaque image, scaleX se traite sur le compositeur.
@@ -137,12 +153,12 @@ export function useHorizontalRail({
         /* ---------------------------------------------------------------
            BLOC 4 — le rail lui-meme
            xPercent est un pourcentage de la largeur de L'ELEMENT ANIME
-           (la piste), pas du conteneur. Pour N panneaux dans une piste de
+           (le convoyeur), pas du conteneur. Pour N panneaux dans un convoyeur de
            N x 100 % :  -100 x (N-1) / N.
            Verification pour N = 3 : -100 x 2/3 = -66,7 % de 300 % = -200 %
            de la largeur du conteneur, soit deux panneaux. Correct.
            --------------------------------------------------------------- */
-        const animation = gsap.to(piste, {
+        const animation = gsap.to(convoyeur, {
           xPercent: (-100 * (nombreDePanneaux - 1)) / nombreDePanneaux,
           ease: EASE.none, // OBLIGATOIRE sur un scrub (§7)
           scrollTrigger: {
@@ -160,6 +176,32 @@ export function useHorizontalRail({
 
         refAnimationConteneur.current = animation;
         const declencheur = animation.scrollTrigger;
+
+        /* ---------------------------------------------------------------
+           BLOC 4 bis — le procede (phase 4)
+           La piste et les figures dependent de la geometrie qu'on vient
+           d'etablir, et doivent mourir avec elle. D'ou l'appel ici, dans
+           le meme bloc matchMedia, et non dans un hook separe qui se
+           reveillerait a contretemps apres un redimensionnement.
+           --------------------------------------------------------------- */
+        const nettoyages: Array<() => void> = [];
+
+        const svgPiste = refPisteSvg.current;
+        const tracePiste = refPisteTrace.current;
+        if (svgPiste && tracePiste) {
+          const piste = brancherPiste({
+            conteneur,
+            convoyeur,
+            svg: svgPiste,
+            trace: tracePiste,
+            nombreDePanneaux,
+          });
+          majPiste = piste.mettreAJour;
+          majPiste(declencheur?.progress ?? 0); // etat au chargement
+          nettoyages.push(piste.nettoyer);
+        }
+
+        nettoyages.push(brancherFigures({ conteneur, animation }));
 
         /* ---------------------------------------------------------------
            BLOC 5 — le clavier (critere de sortie de la phase 3)
@@ -195,7 +237,7 @@ export function useHorizontalRail({
 
         // Filet de securite : si le navigateur pousse quand meme le
         // conteneur (certaines versions de Safari le font au clic), on le
-        // ramene a zero. Sans ca, la piste se retrouve decalee en double.
+        // ramene a zero. Sans ca, le convoyeur se retrouve decale en double.
         const surDerive = () => {
           if (conteneur.scrollLeft !== 0) conteneur.scrollLeft = 0;
         };
@@ -221,6 +263,7 @@ export function useHorizontalRail({
           annule = true;
           conteneur.removeEventListener("focusin", surFocus);
           conteneur.removeEventListener("scroll", surDerive);
+          for (const nettoyer of nettoyages) nettoyer();
           refAnimationConteneur.current = null;
           // Le tween et son ScrollTrigger sont revoques par matchMedia.
         };
@@ -231,5 +274,5 @@ export function useHorizontalRail({
     { scope: refConteneur, dependencies: [nombreDePanneaux, animationsReduites] },
   );
 
-  return { refConteneur, refPiste, refAnimationConteneur };
+  return { refConteneur, refConvoyeur, refAnimationConteneur };
 }

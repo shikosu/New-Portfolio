@@ -6,7 +6,7 @@ Durées indicatives pour un rythme d'étudiant (≈ 6-8 h/semaine hors cours).
 
 ```
 P0 ──► P1 ──► P2 ──► P3 ──► P4 ──► P5 ──► P6 ──► P7
-Cadrage Proto  Socle  Rail  Circuit Transi Contenu Qualité
+Cadrage Proto  Socle  Rail  Piste  Transi Contenu Qualité
                              ▲                       │
                              └── la boucle de reprise ┘
 ```
@@ -128,28 +128,66 @@ C'est le squelette de navigation de tout le site.
 
 ---
 
-## Phase 4 — Le circuit · ~1,5 semaine
+## Phase 4 — La piste et les figures · ~1,5 semaine
 
 L'effet signature. C'est ici que le site devient le tien.
 
-- [ ] Figures de procédé intégrées et découpées en segments animables (un `<path>` par
-      élément) — ⚠️ « SVG KiCad » était un reste du concept PCB abandonné en phase 0 ;
-      les fichiers sont dans `src/assets/process/` (§8 du CLAUDE.md).
-- [ ] Brancher les ScrollTriggers des figures sur `refAnimationConteneur` du rail
-      (`containerAnimation`), et **`start: "left center"`**, jamais `"top center"` (§6.4).
-- [ ] Tracé progressif synchronisé au rail (`containerAnimation` + `drawSVG`)
-- [ ] Lueur : filtre `feGaussianBlur` sur un calque dupliqué (**pas** de `box-shadow` animé)
-- [ ] Électrons : points lumineux en boucle sur `MotionPath`
-- [ ] Nœuds / pastilles qui « s'allument » à l'arrivée du tracé
-- [ ] Repères de désignation (R1, C4, U2…) en IBM Plex Mono à côté de chaque bloc
+> ⚠️ **Phase réécrite le 2026-09-22.** La version d'origine demandait une lueur
+> `feGaussianBlur`, des électrons lumineux en boucle, des nœuds qui s'allument et des repères
+> `R1, C4, U2`. C'était un reste du concept **circuit imprimé abandonné en phase 0**, et ça
+> contredisait le §10 du CLAUDE.md (« pas d'effet néon ni de dégradé posé par-dessus ») ainsi
+> que le §7 (« un seul moment spectaculaire par page »). R1/C4/U2 sont des désignations de
+> composants, pas des étapes de procédé.
+
+### 4a — Le socle *(fait)*
+
+- [x] Les 12 figures nettoyées et intégrées via `vite-plugin-svgr` (`?react` → composant React,
+      donc SVG **inline** : une `<img>` ne laisserait pas atteindre les `<path>`).
+      109 Ko → 15,5 Ko, `id` préfixés `fNN-`. Détail au §8 du CLAUDE.md.
+- [x] **La piste** : une droite générée en code, `viewBox` en pixels, remesurée à chaque
+      redimensionnement. Pilotée par la progression du rail, pas par un ScrollTrigger à elle
+      (voir le piège n°1 du §6.4).
+- [x] Sa pointe est un **front** : milieu de l'écran à l'entrée du rail → bord droit exactement
+      à la fin. C'est ce qui prépare la sortie par la droite de la phase 5.
+- [x] Révélation des figures au passage du front : `containerAnimation` + `start: "left center"`,
+      DrawSVG, cascade bornée à `DUR.base` par `stagger.amount`.
+- [x] Les 4 éléments en tirets révélés à l'opacité, détectés automatiquement.
+
+### 4b — Les mécanismes propres à chaque bloc *(reste à faire)*
+
+C'est le gros du travail, et il est déjà spécifié : **`CONTENU.md` donne, bloc par bloc, le
+mécanisme d'apparition**. Aucun n'est à inventer.
+
+- [ ] Les 12 mécanismes, un par un, validés un par un. Rappel de quelques-uns :
+      01 le nom se compose **par sédimentation** (interdit : fondu + glissement) ·
+      02 l'arc **s'amorce**, allumage franc en `EASE.strong` ·
+      03 les impuretés partent **une par une** (`STAGGER`), compteur `98 %` → `9N` en HTML ·
+      04 le lingot **monte** — seul mouvement vertical du site (§7) ·
+      07 le texte est **insolé** par `clip-path`, jamais par `opacity` (§7) ·
+      08 la gravure **retire** de la matière, seule animation soustractive du site.
+- [ ] **Un seul ★ par page.** Les 8 blocs non-★ restent sobres : ils apparaissent, ils ne se
+      donnent pas en spectacle.
+- [ ] **Le tracé vertical en mobile.** Sous 768 px le rail est une pile (décision de phase 3) :
+      la piste doit s'y tracer de haut en bas. Elle est actuellement masquée.
+- [ ] La figure « fab en construction » du bloc 12 — **à dessiner par toi**, Inkscape, §8.
 
 **Critères de sortie**
-✅ Le tracé arrive exactement à 100 % en fin de rail, pas à 92 %.
-✅ Vérifié sur Firefox — la longueur des `<path>` y est parfois mal calculée, le contournement documenté est de viser 102 % au lieu de 100 %.
-✅ Les pistes sont bien des contours (`fill="none"` + `stroke`), pas des formes remplies.
-✅ Aucun `<path>` multi-segments (plusieurs commandes `M`) animé directement — DrawSVG les rend mal ; il faut les découper.
+- [x] Le tracé arrive **exactement** à 100 % en fin de rail, pas à 92 %. ← mesuré : pointe à
+      1280 px sur un écran de 1280 px, et 3840/3840 de longueur tracée. Idem après un
+      redimensionnement 1440 → 1000 px en plein défilement.
+- [x] Les figures sont bien des contours (`fill="none"` + `stroke`), pas des formes remplies.
+- [x] Aucun `<path>` multi-segments (plusieurs commandes `M`) animé directement.
+- [x] Les éléments en tirets ne passent pas par DrawSVG.
+- [x] Le contenu survit sans animation : en mode « animations réduites », les 12 figures sont
+      intégralement visibles et aucune n'est masquée par un état de départ.
+- [ ] Vérifié sur **Firefox** — la longueur des `<path>` y est parfois mal calculée ; le
+      contournement documenté est de viser 102 % au lieu de 100 %. ← à faire par toi.
+- [ ] Vérifié sur **Safari**. ← à faire par toi.
 
----
+> **Banc de vérification de la phase 4** : 18 contrôles automatisés (géométrie de la piste,
+> position du front au repos et en fin de rail, redimensionnement, révélation des figures,
+> éléments en tirets, mode réduit, mobile). Tous au vert le 2026-09-22, sur Chromium
+> uniquement — d'où les deux lignes Firefox/Safari ci-dessus.
 
 ## Phase 5 — Transitions de page · ~1 semaine
 
@@ -221,7 +259,7 @@ Tout le détail est dans **QUALITY.md**. Résumé des portes :
 | P1 Prototype | 2026-09-10 | 2026-09-10 | Close. `scrub: 0.3`, `ease: "none"`, 60 fps / pire image 17 ms. Décisions reportées au §7 du CLAUDE.md. Les deux fichiers de `proto/` sont jetables : ils meurent en phase 2. |
 | P2 Socle | 2026-09-10 | 2026-09-11 | Vite 8 + React 19.2 + TS 6 strict + Tailwind v4. `npm run check` vert, test du carré validé. En ligne sur `v4.teovidal.eu` (Pi 5, Docker/GHCR/Watchtower, tunnel Cloudflare). Reste à confirmer le déploiement automatique de bout en bout. |
 | P3 Rail | 2026-09-22 | | Mécanique close et vérifiée au banc (23/23). Décision mobile : pile verticale sous 768 px. Correction du §6.4 : la course se mesure en `clientWidth`, pas en `innerWidth` (barre de défilement). **Restent deux mesures manuelles : 60 fps et le vrai téléphone.** |
-| P4 Circuit | | | |
+| P4 Piste | 2026-09-22 | | **Phase réécrite** : les items « lueur / électrons / nœuds / R1-C4-U2 » étaient des restes du concept PCB. Socle (4a) fait et vérifié au banc (18/18) : figures nettoyées 109→15,5 Ko, piste tracée en front, révélations branchées en `containerAnimation`. Reste 4b : les 12 mécanismes de CONTENU.md, le tracé vertical mobile, la figure du bloc 12. |
 | P5 Transitions | | | |
 | P6 Contenu | | | |
 | P7 Qualité | | | |
