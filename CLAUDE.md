@@ -61,6 +61,16 @@ Règles de structure :
   serait une deuxième mécanique à régler et à tester pour un gain que personne ne réclame.
   Le critère « aucun clignotement blanc » reste tenu : une bascule instantanée n'en a pas.
 
+**Pages annexes (conformité légale, 2026-09-23) — hors du récit.** `/mentions-legales` et
+`/confidentialite` ne sont **pas** des étapes du procédé : pas de rail, pas de piste, pas de
+figure, bascule instantanée à l'entrée et à la sortie. Elles vivent dans `ANNEXES`
+(`lib/parcours.ts`), jamais dans `PARCOURS`. On y accède par le **pied de page**, présent sous
+toutes les pages et monté **dans** la scène de `TransitionPages` (sinon il remonte dans le
+vide pendant une transition). Détail et « à faire » : `CONFORMITE.md`.
+⚠️ Toute nouvelle collecte de données (formulaire, outil de mesure, script tiers) impose de
+mettre à jour `content/legal.ts` et, pour un traceur, `content/traceurs.ts` **dans le même
+commit**. Le bandeau cookies n'existe que si ce registre n'est pas vide.
+
 Storyboard détaillé des 12 vignettes — ce qui entre, ce qui sort, dans quel sens, déclenché par quoi :
 `https://claude.ai/code/artifact/077a28a2-2ce5-4a46-a2d8-3613e6d6d437`
 
@@ -122,20 +132,24 @@ src/
 │   ├── procede.ts           # branchement de la piste et des révélations de figures
 │   ├── mecanismes.ts        # LES 12 MÉCANISMES, un par bloc — cf. CONTENU.md
 │   ├── parcours.ts          # l'ordre des 4 pages, le sens, le chargement à la demande
-│   └── transition.ts        # les deux moitiés d'une transition de page — cf. §6.6
+│   ├── transition.ts        # les deux moitiés d'une transition de page — cf. §6.6
+│   └── consentement.ts      # consentement aux traceurs (éteint tant que le registre est vide)
 ├── hooks/
 │   ├── useHorizontalRail.ts
 │   └── usePrefersReducedMotion.ts
 ├── components/
-│   ├── layout/              # Shell, Nav, TransitionPages, Liaison
+│   ├── layout/              # Shell, Nav, TransitionPages, Liaison, PiedDePage
 │   ├── rail/                # Rail, Panneau, IndicateurRail, Entrees, Liens
+│   ├── legal/               # PageLegale, BlocLegal, BandeauConsentement
 │   ├── process/             # Piste, Figure, figures.ts (les 12 imports svgr)
 │   └── ui/                  # Suivant (la flèche de fin de rail), primitives
 ├── pages/
 │   ├── Presentation.tsx
 │   ├── Objectifs.tsx
 │   ├── Experience.tsx
-│   └── Projets.tsx
+│   ├── Projets.tsx
+│   ├── MentionsLegales.tsx  # annexe, hors récit
+│   └── Confidentialite.tsx  # annexe, hors récit
 ├── content/                 # ⚠️ données séparées du rendu
 │   ├── types.ts             # le contrat : Bloc, Entree, Fiche, Lien (phase 6)
 │   ├── site.ts              # nom, titre d'onglet — recopiés dans index.html
@@ -144,7 +158,9 @@ src/
 │   ├── objectifs.ts
 │   ├── experience.ts
 │   ├── competences.ts
-│   └── projets.ts
+│   ├── projets.ts
+│   ├── legal.ts             # mentions légales, confidentialité, pied de page (annexes)
+│   └── traceurs.ts          # registre des traceurs soumis à consentement — VIDE à ce jour
 └── assets/
     └── process/             # les 4 figures de procédé (SVG) — cf. §8
 ```

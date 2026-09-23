@@ -327,3 +327,13 @@ marqué, il n'a pas été relu par toi.
 4. **Le vocabulaire de fab doit être juste.** 9N, CMP, EWS, SiO₂, RIE, die attach : le public visé connaît le flot. Un sigle mal employé décrédibilise plus qu'il ne crédibilise. En cas de doute, retirer le sigle.
 5. **Le contenu existe sans animation** (§9.4). Si GSAP ne charge pas, le parcours reste lisible de bout en bout.
 6. **Zéro Lorem ipsum dans le dépôt** (ROADMAP P6). Un bloc sans contenu réel reste vide, il ne reçoit pas de faux texte.
+
+
+---
+
+## Annexe — pages légales (hors procédé, 2026-09-23)
+
+Les textes des pages `/mentions-legales` et `/confidentialite` ne sont **pas** des blocs :
+ils ne passent pas par ce fichier. Ils vivent dans `src/content/legal.ts`, portent
+`brouillon: true` (rédigés par Claude à partir de l'inventaire du code) et contiennent des
+champs `[À COMPLÉTER]` que toi seul peux remplir. Liste complète : `CONFORMITE.md`.

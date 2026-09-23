@@ -4,7 +4,9 @@ import { Nav } from "@/components/layout/Nav";
 import { TransitionPages } from "@/components/layout/TransitionPages";
 import { demarrerLenis, arreterLenis } from "@/lib/lenis";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { PARCOURS, indiceDe } from "@/lib/parcours";
+import { libelleDe } from "@/lib/parcours";
+import { demarrerConsentement } from "@/lib/consentement";
+import { BandeauConsentement } from "@/components/legal/BandeauConsentement";
 import { titreDePage } from "@/content/site";
 
 /* ---------------------------------------------------------------------
@@ -41,16 +43,32 @@ export function Shell() {
      La page d'accueil (indice 0) garde le titre complet du site. */
   const { pathname } = useLocation();
   useEffect(() => {
-    const indice = indiceDe(pathname);
-    document.title = titreDePage(indice > 0 ? (PARCOURS[indice]?.libelle ?? null) : null);
+    document.title = titreDePage(libelleDe(pathname));
   }, [pathname]);
+
+  /* Consentement aux traceurs : relit le choix enregistre et ne charge
+     que ce qui a ete accepte. Ne fait RIEN tant que le registre
+     content/traceurs.ts est vide (c'est le cas aujourd'hui). */
+  useEffect(() => {
+    demarrerConsentement();
+  }, []);
 
   return (
     <div className="bg-ground text-ink min-h-screen">
+      {/* Lien d'evitement (RGAA 12.7) : le premier ⇥ de la page le fait
+          apparaitre, Entree saute la navigation. Invisible a la souris. */}
+      <a
+        href="#contenu"
+        className="bg-ground text-ink text-small sr-only z-[70] px-4 py-2 focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+      >
+        Aller au contenu
+      </a>
       <Nav />
-      <main>
+      {/* tabIndex -1 : cible du lien d'evitement, hors ordre de tabulation. */}
+      <main id="contenu" tabIndex={-1}>
         <TransitionPages />
       </main>
+      <BandeauConsentement />
     </div>
   );
 }

@@ -19,6 +19,18 @@ services:
     labels:
       # Seuls les conteneurs portant ce label sont mis a jour par Watchtower.
       - "com.centurylinklabs.watchtower.enable=true"
+    # -----------------------------------------------------------------
+    # Journaux bornes (RGPD, duree de conservation limitee — ajoute le
+    # 2026-09-23). Nginx ecrit chaque requete sur la sortie standard, et
+    # par defaut Docker garde TOUT, sans limite, pour toujours. Ici :
+    # 3 fichiers de 10 Mo au plus, le plus ancien est ecrase. C'est ce
+    # que promet la politique de confidentialite (« au-dela de 30 Mo »).
+    # -----------------------------------------------------------------
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # -------------------------------------------------------------------
   # C'est LUI qui rend le deploiement automatique : il interroge GHCR

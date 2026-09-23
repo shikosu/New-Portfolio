@@ -1,0 +1,23 @@
+# Téo Vidal — Irchi
+
+> Portfolio de Téo Vidal, étudiant en BUT GEII (génie électrique et informatique industrielle) à l'IUT de Montpellier-Sète, qui vise l'industrie du semi-conducteur. Le site est construit comme une ligne de fabrication de puce, du sable de quartz au packaging : chaque étape du procédé présente une partie du parcours.
+
+Le site est une application JavaScript animée au défilement. Ce fichier en résume le contenu pour les agents qui ne l'exécutent pas.
+
+## Pages
+
+- [Présentation](https://v4.teovidal.eu/) : qui est Téo Vidal. Bac Pro CIEL au lycée Champollion de Lattes, puis BUT GEII. Objectif : une école d'ingénieurs en micro-nanoélectronique (Grenoble INP–Phelma en cible), puis l'industrie du semi-conducteur.
+- [Objectifs](https://v4.teovidal.eu/objectifs) : comprendre l'architecture d'un processeur ; être à l'aise en électronique analogique. Axes secondaires : réseau (Cisco IOS), auto-hébergement (Raspberry Pi 5, Docker), web (React, TypeScript), électronique audio (LTspice).
+- [Expérience](https://v4.teovidal.eu/experience) : quatre stages (PFMP) en réseau, cybersécurité, réparation électronique et développement — dont Adagio.io (Onfocus SAS), L'Atelier du Numérique, CDC Habitat, OVEA — et des missions freelance. Compétences : C/C++, Arduino, ESP32, I²C, SPI, UART, Verilog, FPGA, KiCad, LTspice, Linux, Docker.
+- [Projets](https://v4.teovidal.eu/projets) : projet phare « De l'Arduino à l'ASIC », conception d'un circuit numérique de Verilog jusqu'au dessin des masques avec des outils libres (Icarus Verilog, GTKWave, puis Yosys et OpenLane) — en cours. Contact.
+
+## Liens
+
+- [GitHub](https://github.com/shikosu) : tous les projets.
+
+## Informations légales
+
+- [Mentions légales](https://v4.teovidal.eu/mentions-legales)
+- [Confidentialité et cookies](https://v4.teovidal.eu/confidentialite)
+
+Réutilisation : ce contenu peut être lu et cité avec un lien vers la source. Il n'est pas autorisé à l'entraînement de modèles d'IA (voir robots.txt).

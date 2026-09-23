@@ -48,6 +48,19 @@ export const PARCOURS: readonly EtapeParcours[] = [
   { chemin: "/projets", libelle: "Projets", repere: "10" },
 ] as const;
 
+/* ---------------------------------------------------------------------
+   Les pages ANNEXES (conformite legale, 2026-09-23) : mentions legales,
+   confidentialite. Elles ne sont PAS dans PARCOURS, et c'est tout le
+   point : `indiceDe` les ignore, donc elles n'ont ni sens de transition,
+   ni fleche « suivant », ni place dans la navigation du procede. On y
+   arrive par le pied de page, et on en repart par une bascule
+   instantanee (TransitionPages.tsx) — elles ne font pas partie du recit.
+   --------------------------------------------------------------------- */
+export const ANNEXES: readonly Omit<EtapeParcours, "repere">[] = [
+  { chemin: "/mentions-legales", libelle: "Mentions légales" },
+  { chemin: "/confidentialite", libelle: "Confidentialité et cookies" },
+] as const;
+
 type Chargeur = () => Promise<{ default: ComponentType }>;
 
 const CHARGEURS: Readonly<Record<string, Chargeur>> = {
@@ -55,6 +68,10 @@ const CHARGEURS: Readonly<Record<string, Chargeur>> = {
   "/objectifs": () => import("@/pages/Objectifs").then((m) => ({ default: m.Objectifs })),
   "/experience": () => import("@/pages/Experience").then((m) => ({ default: m.Experience })),
   "/projets": () => import("@/pages/Projets").then((m) => ({ default: m.Projets })),
+  "/mentions-legales": () =>
+    import("@/pages/MentionsLegales").then((m) => ({ default: m.MentionsLegales })),
+  "/confidentialite": () =>
+    import("@/pages/Confidentialite").then((m) => ({ default: m.Confidentialite })),
 };
 
 /* ---------------------------------------------------------------------
@@ -93,6 +110,8 @@ export const PAGES: Readonly<Record<string, LazyExoticComponent<ComponentType>>>
   "/objectifs": lazy(CHARGEURS["/objectifs"]),
   "/experience": lazy(CHARGEURS["/experience"]),
   "/projets": lazy(CHARGEURS["/projets"]),
+  "/mentions-legales": lazy(CHARGEURS["/mentions-legales"]),
+  "/confidentialite": lazy(CHARGEURS["/confidentialite"]),
 };
 
 /* ---------------------------------------------------------------------
@@ -128,4 +147,21 @@ export function etapeSuivante(chemin: string): EtapeParcours | null {
   const indice = indiceDe(chemin);
   if (indice < 0) return null;
   return PARCOURS[indice + 1] ?? null;
+}
+
+/** Vrai pour une page annexe (legale), hors du recit du procede. */
+export function estAnnexe(chemin: string): boolean {
+  const cible = normaliser(chemin);
+  return ANNEXES.some((page) => page.chemin === cible);
+}
+
+/**
+ * Le libelle a mettre dans le titre de l'onglet, ou null pour la page
+ * d'accueil (qui garde le titre complet du site) et les adresses inconnues.
+ */
+export function libelleDe(chemin: string): string | null {
+  const indice = indiceDe(chemin);
+  if (indice > 0) return PARCOURS[indice]?.libelle ?? null;
+  const cible = normaliser(chemin);
+  return ANNEXES.find((page) => page.chemin === cible)?.libelle ?? null;
 }

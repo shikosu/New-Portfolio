@@ -37,6 +37,25 @@
       content="Une ligne noire sur fond clair, et le nom Téo Vidal : du sable à la puce."
     />
     <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Donnees structurees (schema.org) : dit aux moteurs et aux agents IA,
+         sans executer le JavaScript, QUI est derriere le site. Uniquement
+         des faits deja publies dans content/. ⚠️ Domaine a changer a la bascule. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Téo Vidal",
+        "url": "https://v4.teovidal.eu/",
+        "description": "Étudiant en BUT GEII à l'IUT de Montpellier-Sète, en route vers l'industrie du semi-conducteur.",
+        "affiliation": {
+          "@type": "CollegeOrUniversity",
+          "name": "IUT de Montpellier-Sète"
+        },
+        "knowsAbout": ["Électronique", "Systèmes embarqués", "Verilog", "FPGA", "Réseaux"],
+        "sameAs": ["https://github.com/shikosu"]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
@@ -53,6 +72,25 @@
         <p>
           Ce portfolio est une animation au défilement : il a besoin de JavaScript. Mes projets
           restent consultables sur <a href="https://github.com/shikosu">GitHub</a>.
+        </p>
+        <!-- Mentions legales SANS JavaScript : les pages /mentions-legales et
+             /confidentialite sont des routes de la SPA, donc illisibles ici.
+             L'obligation LCEN vaut pour chaque page : on recopie l'essentiel.
+             ⚠️ Memes valeurs que content/legal.ts (EDITEUR) : changer l'un
+             sans l'autre = deux identites. -->
+        <h2>Mentions légales</h2>
+        <p>
+          Site personnel non commercial, édité et hébergé par Téo Vidal, sur un serveur
+          situé en France — [À COMPLÉTER : adresse postale] — [À COMPLÉTER : téléphone] —
+          [À COMPLÉTER : e-mail]. Directeur de la publication : Téo Vidal. Trafic acheminé
+          par Cloudflare, Inc., 101 Townsend St., San Francisco, CA 94107, États-Unis,
+          +1 650 319 8930.
+        </p>
+        <p>
+          Ce site ne dépose aucun cookie et ne collecte aucune donnée par formulaire.
+          Cloudflare traite votre adresse IP pour acheminer les pages et protéger le site.
+          Droits d'accès, de rectification, d'effacement et d'opposition : écrire à
+          l'adresse ci-dessus ; réclamation possible auprès de la CNIL (cnil.fr).
         </p>
       </main>
     </noscript>
