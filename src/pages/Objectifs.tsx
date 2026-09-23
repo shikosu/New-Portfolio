@@ -11,7 +11,7 @@ import { ETAPES_OBJECTIFS } from "@/content/etapes";
 export function Objectifs() {
   return (
     <Rail
-      libelle="Objectifs et formation — etapes 04 a 06"
+      libelle="Objectifs et formation — étapes 04 à 06"
       suivant={<Suivant depuis="/objectifs" />}
     >
       {ETAPES_OBJECTIFS.map((etape) => (

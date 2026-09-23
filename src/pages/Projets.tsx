@@ -9,7 +9,7 @@ import { ETAPES_PROJETS } from "@/content/etapes";
 
 export function Projets() {
   return (
-    <Rail libelle="Projets et contact — etapes 10 a 12">
+    <Rail libelle="Projets et contact — étapes 10 à 12">
       {ETAPES_PROJETS.map((etape) => (
         <Panneau key={etape.repere} etape={etape} bloc={BLOCS_PROJETS[etape.repere]} />
       ))}

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Les 4 pages du parcours + les 2 pages legales.
+     ⚠️ Domaine a changer le jour de la bascule vers teovidal.eu,
+     et <lastmod> a mettre a jour quand une page change vraiment. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://v4.teovidal.eu/</loc><lastmod>2026-09-23</lastmod></url>
+  <url><loc>https://v4.teovidal.eu/objectifs</loc><lastmod>2026-09-23</lastmod></url>
+  <url><loc>https://v4.teovidal.eu/experience</loc><lastmod>2026-09-23</lastmod></url>
+  <url><loc>https://v4.teovidal.eu/projets</loc><lastmod>2026-09-23</lastmod></url>
+  <url><loc>https://v4.teovidal.eu/mentions-legales</loc><lastmod>2026-09-23</lastmod></url>
+  <url><loc>https://v4.teovidal.eu/confidentialite</loc><lastmod>2026-09-23</lastmod></url>
+</urlset>

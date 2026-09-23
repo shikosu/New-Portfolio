@@ -4,10 +4,11 @@ import type { Location } from "react-router";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { SEUIL_RAIL } from "@/hooks/useHorizontalRail";
-import { PAGES, PARCOURS, precharger, sensEntre } from "@/lib/parcours";
+import { ANNEXES, PAGES, PARCOURS, estAnnexe, precharger, sensEntre } from "@/lib/parcours";
 import { pointeDeLaPiste } from "@/lib/procede";
 import { remettreEnHaut } from "@/lib/lenis";
 import { Liaison } from "@/components/layout/Liaison";
+import { PiedDePage } from "@/components/layout/PiedDePage";
 import {
   afficherLiaison,
   effacerLiaison,
@@ -163,8 +164,13 @@ export function TransitionPages() {
              se trace de haut en bas. Une liaison horizontale n'aurait
              aucun sens, et un balayage vertical serait une DEUXIEME
              mecanique a regler et a tester.
+           - vers ou depuis une page ANNEXE (mentions legales,
+             confidentialite) : elle n'a pas de piste, donc rien que la
+             liaison puisse relier. Elle est hors du recit, elle entre
+             et sort sans spectacle.
          ============================================================= */
-      if (animationsReduites || window.innerWidth < SEUIL_RAIL) {
+      const horsRecit = estAnnexe(affichee.pathname) || estAnnexe(location.pathname);
+      if (animationsReduites || window.innerWidth < SEUIL_RAIL || horsRecit) {
         void chargement.then(() => {
           if (annule) return;
           remettreEnHaut();
@@ -234,11 +240,16 @@ export function TransitionPages() {
       <div ref={refScene} tabIndex={-1}>
         <Suspense fallback={null}>
           <Routes location={affichee}>
-            {PARCOURS.map(({ chemin }) => {
+            {[...PARCOURS, ...ANNEXES].map(({ chemin }) => {
               const Page = PAGES[chemin];
               return <Route key={chemin} path={chemin} element={<Page />} />;
             })}
           </Routes>
+          {/* Dans la scene, pas dans la coquille : voir PiedDePage.tsx.
+              Et DANS le Suspense : au premier chargement, il attend la
+              page avec elle, au lieu de s'afficher seul en haut d'un
+              ecran vide le temps que le morceau de code arrive. */}
+          <PiedDePage />
         </Suspense>
       </div>
 

@@ -1,4 +1,4 @@
-import { Children, useRef } from "react";
+import { Children, useId, useRef } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { useHorizontalRail } from "@/hooks/useHorizontalRail";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -44,7 +44,7 @@ import { HAUTEUR_PISTE } from "@/lib/motion";
 interface ProprietesRail {
   /** Les panneaux. Un enfant = un panneau plein ecran. */
   readonly children: ReactNode;
-  /** Nom de la region pour les lecteurs d'ecran. */
+  /** Titre de la page : h1 masque, et nom de la region pour les lecteurs d'ecran. */
   readonly libelle: string;
   /**
    * Le lien vers l'etape suivante (phase 5). Il est pose DANS le dernier
@@ -60,6 +60,7 @@ export function Rail({ children, libelle, suivant }: ProprietesRail) {
   const total = panneaux.length;
 
   const animationsReduites = usePrefersReducedMotion();
+  const idTitre = useId();
   const refFilet = useRef<HTMLSpanElement>(null);
   const refCompteur = useRef<HTMLSpanElement>(null);
   const refPisteSvg = useRef<SVGSVGElement>(null);
@@ -95,10 +96,20 @@ export function Rail({ children, libelle, suivant }: ProprietesRail) {
   return (
     <section
       ref={refConteneur}
-      aria-label={libelle}
+      aria-labelledby={idTitre}
       className={classesConteneur}
       style={{ "--panneaux": total } as CSSProperties}
     >
+      {/* Le h1 de la page (RGAA 9.1 : chaque page a un titre de niveau 1).
+          Avant ce chantier, aucune page n'en avait : les blocs portent des
+          h2, et le titre visible du bloc 01 est un NOM qui se compose par
+          sedimentation, pas le titre de la page. Il est donc masque a
+          l'ecran (`sr-only`) et lu en premier par un lecteur d'ecran.
+          Hors du convoyeur : il ne se translate pas, il ne perturbe ni
+          le calcul de largeur ni la piste. */}
+      <h1 id={idTitre} className="sr-only">
+        {libelle}
+      </h1>
       <div ref={refConvoyeur} className={classesConvoyeur}>
         {/* La piste vit DANS le convoyeur : elle se translate avec les
             panneaux, ce qui fait de sa pointe un front fixe a l'ecran. */}

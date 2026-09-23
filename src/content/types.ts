@@ -72,3 +72,45 @@ export interface Bloc {
 
 /** Les blocs d'une page, indexes par repere ("01".."12"). */
 export type Blocs = Readonly<Record<string, Bloc>>;
+
+/* ---------------------------------------------------------------------
+   Les pages annexes (chantier de conformite legale, 2026-09-23).
+
+   Elles ne font PAS partie du recit du procede : pas de rail, pas de
+   piste, pas de transition animee. Ce sont des pages de texte, rendues
+   par un composant unique (`components/legal/PageLegale.tsx`).
+
+   Convention des champs a remplir : toute valeur qui commence par « [ »
+   (ex. « [A COMPLETER : adresse postale] ») est un TROU que seul toi
+   peux combler. `renseigne()` (content/legal.ts) sait les reconnaitre,
+   ce qui permet par exemple de ne pas afficher un lien mailto vers une
+   adresse qui n'existe pas encore.
+   --------------------------------------------------------------------- */
+
+/** Un tableau simple : une ligne d'en-tete, des lignes de cellules. */
+export interface Tableau {
+  /** Legende lue par les lecteurs d'ecran (<caption>). */
+  readonly legende: string;
+  readonly entetes: readonly string[];
+  readonly lignes: readonly (readonly string[])[];
+}
+
+export interface SectionLegale {
+  /** Ancre de la section : /confidentialite#cookies. */
+  readonly id: string;
+  readonly titre: string;
+  readonly paragraphes?: readonly string[];
+  readonly liste?: readonly string[];
+  readonly tableau?: Tableau;
+  readonly liens?: readonly Lien[];
+}
+
+export interface PageLegale {
+  readonly titre: string;
+  readonly chapo?: string;
+  /** Date de derniere mise a jour, au format AAAA-MM-JJ. */
+  readonly miseAJour: string;
+  readonly sections: readonly SectionLegale[];
+  /** Meme regle que les blocs : redige par Claude, a relire par toi. */
+  readonly brouillon?: boolean;
+}

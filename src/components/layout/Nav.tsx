@@ -1,5 +1,5 @@
-import { NavLink } from "react-router";
-import { PARCOURS, precharger } from "@/lib/parcours";
+import { NavLink, useLocation } from "react-router";
+import { PARCOURS, estAnnexe, precharger } from "@/lib/parcours";
 
 /* Navigation persistante : cette barre n'est PAS remontee entre deux
    pages, seul le contenu l'est (ROADMAP phase 5).
@@ -13,9 +13,17 @@ import { PARCOURS, precharger } from "@/lib/parcours";
    page visee, comme la fleche de fin de rail. */
 
 export function Nav() {
+  /* Sur une page annexe (legale), le texte defile SOUS la barre fixe :
+     sans fond, les deux se superposaient et devenaient illisibles. Sur
+     les pages du rail, on garde la barre transparente — rien n'y passe
+     dessous, et la page qui sort pendant une transition doit rester
+     visible jusqu'en haut de l'ecran. */
+  const { pathname } = useLocation();
+  const fond = estAnnexe(pathname) ? "bg-ground" : "";
+
   return (
-    <nav aria-label="Parcours" className="fixed top-0 right-0 left-0 z-50">
-      <ul className="flex gap-6 px-6 py-4">
+    <nav aria-label="Parcours" className={`fixed top-0 right-0 left-0 z-50 ${fond}`}>
+      <ul className="flex flex-wrap gap-x-6 gap-y-2 px-6 py-4">
         {PARCOURS.map(({ chemin, libelle, repere }) => (
           <li key={chemin}>
             <NavLink

@@ -10,7 +10,7 @@ import { ETAPES_PRESENTATION } from "@/content/etapes";
 
 export function Presentation() {
   return (
-    <Rail libelle="Presentation — etapes 01 a 03" suivant={<Suivant depuis="/" />}>
+    <Rail libelle="Présentation — étapes 01 à 03" suivant={<Suivant depuis="/" />}>
       {ETAPES_PRESENTATION.map((etape) => (
         <Panneau key={etape.repere} etape={etape} bloc={BLOCS_PRESENTATION[etape.repere]} />
       ))}
