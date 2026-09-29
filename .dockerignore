@@ -5,5 +5,4 @@ dist
 proto
 *.md
 !package.json
-Claude outputs
 .DS_Store

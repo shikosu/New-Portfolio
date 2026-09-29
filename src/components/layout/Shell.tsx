@@ -7,7 +7,7 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { libelleDe } from "@/lib/parcours";
 import { demarrerConsentement } from "@/lib/consentement";
 import { BandeauConsentement } from "@/components/legal/BandeauConsentement";
-import { titreDePage } from "@/content/site";
+import { descriptionDePage, titreDePage } from "@/content/site";
 
 /* ---------------------------------------------------------------------
    Coquille persistante : le fond, la navigation et le defilement lisse
@@ -44,6 +44,10 @@ export function Shell() {
   const { pathname } = useLocation();
   useEffect(() => {
     document.title = titreDePage(libelleDe(pathname));
+    // Meme logique pour la description : une par page (content/site.ts).
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute("content", descriptionDePage(pathname));
   }, [pathname]);
 
   /* Consentement aux traceurs : relit le choix enregistre et ne charge

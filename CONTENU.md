@@ -319,6 +319,34 @@ marqué, il n'a pas été relu par toi.
 
 ---
 
+## 3 ter. Réécriture « pas l'air fait par une IA » (2026-09-29)
+
+Charte : `DESIGN.md` §7. Tous les blocs restent `brouillon: true`. Aucun fait nouveau, sauf
+deux données que tu as fournies ce jour-là : **tu cherches un stage** (sans période précise)
+et l'e-mail public `teo.vidal@etu.umontpellier.fr`.
+
+Chaque bloc reçoit un `titre` concret. Le `sujet` de `etapes.ts` reste la structure interne
+(figée en P0) ; il n'est plus affiché.
+
+| Bloc | Titre affiché | Texte (changement) |
+|---|---|---|
+| 01 | Téo Vidal | chapô : « Étudiant en BUT GEII à l'IUT de Montpellier-Sète. Je cherche un stage, cap sur le semi-conducteur. » |
+| 02 | Du Bac Pro CIEL au BUT GEII | « … Ce qui m'intéresse se passe sous le logiciel : au niveau du transistor et du signal. » |
+| 03 | Ma cible : la micro-nanoélectronique | « Le silicium d'une puce est pur à 99,9999999 % au moins. Je vise une école d'ingénieurs en micro-nanoélectronique, Phelma (Grenoble INP) en priorité, puis l'industrie du semi-conducteur. » |
+| 04 | Au quotidien | analogie des dislocations conservée, sans « plutôt que par à-coups » |
+| 05 | Ce que je veux maîtriser en GEII | tiret long retiré du détail « analogique » |
+| 06 | À côté de l'électronique | « Le polissage CMP rend le wafer plan, pour que la lithographie puisse faire sa mise au point. En dehors de l'électronique, je pratique aussi : » |
+| 07 | Quatre stages, quatre métiers | « Mes PFMP de Bac Pro CIEL : réseau, cybersécurité, réparation électronique et développement. » |
+| 08 | Où j'ai travaillé | « Adagio.io (Onfocus SAS) » au lieu d'un tiret |
+| 09 | Outils et langages | inchangé |
+| 10 | Le projet que je détaille | inchangé |
+| 11 | Les autres projets | « Mes autres projets sont sur GitHub, avec leur code. » |
+| 12 | Me contacter pour un stage | broches : e-mail, GitHub ; LinkedIn et CV préparés, **masqués tant que l'URL est vide** |
+
+Retirés, parce qu'ils n'apportaient aucune information : « Le cursus était le masque ; ces
+expériences sont le motif. » (07), « Sans polyvalence, pas d'expérience exploitable. » (06),
+« Tout le reste est là. » (11).
+
 ## 4. Règles de rédaction, valables partout
 
 1. **Aucun texte en dur dans un composant** (§5 du CLAUDE.md). Tout passe par `src/content/*.ts`.

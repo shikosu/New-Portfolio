@@ -16,7 +16,7 @@ const BLOCS = { ...BLOCS_EXPERIENCE, ...BLOCS_COMPETENCES };
 export function Experience() {
   return (
     <Rail
-      libelle="Expérience et compétences — étapes 07 à 09"
+      libelle="Expérience et compétences, étapes 07 à 09"
       suivant={<Suivant depuis="/experience" />}
     >
       {ETAPES_EXPERIENCE.map((etape) => (

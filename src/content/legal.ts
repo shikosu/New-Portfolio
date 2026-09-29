@@ -138,9 +138,9 @@ export const MENTIONS_LEGALES: PageLegale = {
 
 /* ===================================================================== */
 export const CONFIDENTIALITE: PageLegale = {
-  titre: "Confidentialité et cookies",
+  titre: "Confidentialité",
   chapo:
-    "Ce site ne vous demande rien : pas de formulaire, pas de compte, pas de cookie publicitaire. Voici, sans rien omettre, les seules données qui circulent quand vous le visitez.",
+    "Ce site ne dépose aucun cookie et ne vous demande aucune information. Voici les seules données qui circulent quand vous le visitez.",
   miseAJour: MISE_A_JOUR,
   brouillon: true,
   sections: [
@@ -270,7 +270,6 @@ export const PIED_DE_PAGE = {
   libelle: "Informations légales",
   mentions: { libelle: "Mentions légales", href: "/mentions-legales" },
   confidentialite: { libelle: "Confidentialité", href: "/confidentialite" },
-  cookies: { libelle: "Cookies", href: "/confidentialite#cookies" },
   github: GITHUB,
-  signature: `© ${new Date().getFullYear()} ${EDITEUR.nom} — Irchi`,
+  signature: `© ${new Date().getFullYear()} ${EDITEUR.nom} · Irchi`,
 } as const;

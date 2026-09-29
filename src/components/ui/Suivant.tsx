@@ -50,11 +50,12 @@ export function Suivant({ depuis }: ProprietesSuivant) {
 
       {/* Un bout de piste termine par un chevron. `transition-transform`
           sur une TRANSFORMATION seule (§7) : au survol, le trait avance
-          de 4 px vers la sortie, dans le sens du procede. */}
+          de 4 px vers la sortie, dans le sens du procede. La duree vient
+          du theme (DESIGN.md §6), pas d'une classe `duration-*`. */}
       <svg
         aria-hidden="true"
         viewBox="0 0 48 12"
-        className="h-3 w-12 transition-transform duration-200 group-hover:translate-x-1"
+        className="h-3 w-12 transition-transform group-hover:translate-x-1"
         fill="none"
         stroke="currentColor"
         strokeWidth={TRAIT}

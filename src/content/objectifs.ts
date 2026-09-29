@@ -15,14 +15,16 @@ import type { Blocs } from "@/content/types";
 
 export const BLOCS_OBJECTIFS: Blocs = {
   "04": {
+    titre: "Au quotidien",
     // L'analogie est exigee noir sur blanc par CONTENU.md : elle est
     // juste, et elle montre que le procede est connu.
     texte:
-      "Tirer un cristal trop vite crée des dislocations, et le lingot est perdu. J'avance de la même façon : par petites doses régulières plutôt que par à-coups.",
+      "Un cristal tiré trop vite se remplit de dislocations, et le lingot est perdu. J'avance de la même façon, par petites doses régulières.",
     entrees: [],
     brouillon: true,
   },
   "05": {
+    titre: "Ce que je veux maîtriser en GEII",
     // Deux objectifs, tous deux donnes dans CONTENU.md. Autant de
     // passages de fil que d'objectifs, pas un de plus.
     entrees: [
@@ -33,14 +35,15 @@ export const BLOCS_OBJECTIFS: Blocs = {
       {
         titre: "Être réellement à l'aise en analogique",
         detail:
-          "Lois des circuits, amplificateurs opérationnels, filtres — éprouvés sur le clone TB-303.",
+          "Lois des circuits, amplificateurs opérationnels et filtres, mis à l'épreuve sur un clone de TB-303.",
       },
     ],
     brouillon: true,
   },
   "06": {
+    titre: "À côté de l'électronique",
     texte:
-      "Sans polissage, pas de lithographie : la surface doit être plane pour que la mise au point soit possible. Sans polyvalence, pas d'expérience exploitable.",
+      "Le polissage CMP rend le wafer plan, pour que la lithographie puisse faire sa mise au point. En dehors de l'électronique, je pratique aussi :",
     entrees: [
       { titre: "Réseau", detail: "Cisco IOS : VLAN, OSPF, NAT, ACL." },
       {
