@@ -43,7 +43,12 @@ export function PiedDePage() {
             </li>
           ) : (
             <li>
-              <a href={PIED_DE_PAGE.github} target="_blank" rel="noopener noreferrer" className={LIEN}>
+              <a
+                href={PIED_DE_PAGE.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={LIEN}
+              >
                 GitHub<span className="sr-only"> (nouvel onglet)</span>
               </a>
             </li>
@@ -58,20 +63,19 @@ export function PiedDePage() {
               {PIED_DE_PAGE.confidentialite.libelle}
             </Link>
           </li>
-          <li>
-            {/* Registre vide : un simple lien vers « aucun cookie ».
-                Registre rempli : un bouton qui rouvre le bandeau —
-                retirer son accord doit etre aussi simple que le donner. */}
-            {CONSENTEMENT_REQUIS ? (
+          {/* Registre rempli : un bouton qui rouvre le bandeau, parce que
+              retirer son accord doit etre aussi simple que le donner.
+              Registre vide : RIEN. Un lien « Cookies » sur un site qui
+              n'en depose aucun est du texte de gabarit (chantier du
+              2026-09-29) ; la mention « aucun cookie » reste dans la page
+              Confidentialite, section #cookies. */}
+          {CONSENTEMENT_REQUIS && (
+            <li>
               <button type="button" onClick={ouvrirPreferences} className={LIEN}>
                 {COOKIES.gerer}
               </button>
-            ) : (
-              <Link to={PIED_DE_PAGE.cookies.href} className={LIEN}>
-                {PIED_DE_PAGE.cookies.libelle}
-              </Link>
-            )}
-          </li>
+            </li>
+          )}
         </ul>
       </nav>
     </footer>

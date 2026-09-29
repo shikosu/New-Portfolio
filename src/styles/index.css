@@ -56,6 +56,21 @@
   --text-display--line-height: 1.02;
   --text-display--letter-spacing: -0.02em;
   --text-display--font-weight: 700;
+
+  /* --- Formes (DESIGN.md §4) ------------------------------------------
+     Rayon unique : 0. On EFFACE l'echelle de rayons de Tailwind, donc
+     `rounded-md` ou `rounded-lg` ne generent plus aucune regle : un coin
+     arrondi ne peut pas revenir par megarde. Un masque a des angles vifs.
+     ------------------------------------------------------------------- */
+  --radius-*: initial;
+
+  /* --- Retours de survol et de focus (DESIGN.md §6) --------------------
+     Meme valeur que DUR.micro (0,2 s) et meme courbe que EASE.out
+     (power2.out = easeOutQuad) de lib/motion.ts. Toute classe
+     `transition-*` en herite : plus aucune duree ecrite dans un composant.
+     ------------------------------------------------------------------- */
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.5, 1, 0.89, 1);
 }
 
 /* ---------------------------------------------------------------------

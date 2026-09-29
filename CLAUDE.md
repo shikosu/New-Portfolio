@@ -4,7 +4,9 @@
 > Il fixe le contexte, les règles et les garde-fous. Le modifier = changer le comportement de Claude sur tout le projet.
 >
 > **Révision en cours : phase 0 close.** Concept « ligne de fab » adopté, identité PCB abandonnée.
-> L'ancienne version est conservée dans `CLAUDE.pcb-obsolete.bak.md` — pour référence, pas pour usage.
+> L'ancienne version (`CLAUDE.pcb-obsolete.bak.md`) a été retirée du dépôt le 2026-09-29 ; elle reste dans l'historique Git.
+>
+> **Charte courte : `DESIGN.md`** (couleurs, typo, rayon 0, icônes, mouvement, ton des textes). Toute modification visuelle ou rédactionnelle la respecte ; un choix absent de `DESIGN.md` y est ajouté avant d'être appliqué.
 
 ---
 
@@ -142,7 +144,7 @@ src/
 │   ├── rail/                # Rail, Panneau, IndicateurRail, Entrees, Liens
 │   ├── legal/               # PageLegale, BlocLegal, BandeauConsentement
 │   ├── process/             # Piste, Figure, figures.ts (les 12 imports svgr)
-│   └── ui/                  # Suivant (la flèche de fin de rail), primitives
+│   └── ui/                  # Suivant (la flèche de fin de rail), Bouton (2 variantes, DESIGN.md §4)
 ├── pages/
 │   ├── Presentation.tsx
 │   ├── Objectifs.tsx

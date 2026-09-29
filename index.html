@@ -2,17 +2,23 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
+    <!-- Favicon, toutes tailles (generees depuis favicon.svg, angles vifs) :
+         .ico pour les vieux navigateurs et Windows, SVG pour les modernes,
+         180 px pour l'ecran d'accueil iOS, 192/512 via le manifeste (Android). -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#FAFAF8" />
 
     <!-- Identite du site. Memes valeurs que src/content/site.ts :
          ce fichier-ci est lu AVANT le JavaScript, c'est ce que voient les
          moteurs de recherche et les apercus de lien. -->
-    <title>Téo Vidal — Irchi</title>
+    <title>Téo Vidal · Irchi</title>
     <meta
       name="description"
-      content="Portfolio de Téo Vidal, étudiant en BUT GEII à Montpellier, en route vers le semi-conducteur. Le site est une ligne de fabrication : du sable à la puce."
+      content="Téo Vidal, étudiant en BUT GEII à l'IUT de Montpellier-Sète, cherche un stage. Cap sur le semi-conducteur. Le portfolio suit une ligne de fabrication, du sable à la puce."
     />
     <meta name="author" content="Téo Vidal" />
     <!-- ⚠️ A passer sur https://teovidal.eu/ le jour de la bascule. -->
@@ -23,10 +29,10 @@
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="fr_FR" />
     <meta property="og:site_name" content="Irchi" />
-    <meta property="og:title" content="Téo Vidal — du sable à la puce" />
+    <meta property="og:title" content="Téo Vidal · Du sable à la puce" />
     <meta
       property="og:description"
-      content="Étudiant en BUT GEII, en route vers le semi-conducteur. Un portfolio construit comme une ligne de fabrication."
+      content="Étudiant en BUT GEII, je cherche un stage. Cap sur le semi-conducteur."
     />
     <meta property="og:url" content="https://v4.teovidal.eu/" />
     <meta property="og:image" content="https://v4.teovidal.eu/og.png" />
@@ -34,7 +40,7 @@
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="Une ligne noire sur fond clair, et le nom Téo Vidal : du sable à la puce."
+      content="Téo Vidal, étudiant en BUT GEII qui cherche un stage. Un wafer dessiné au trait est posé sur une ligne noire."
     />
     <meta name="twitter:card" content="summary_large_image" />
 
@@ -64,10 +70,11 @@
          pre-rendu, mais l'essentiel reste lisible — qui, quoi, ou. -->
     <noscript>
       <main style="max-width: 40rem; margin: 6rem auto; padding: 0 1.5rem; font-family: system-ui, sans-serif; color: #111110; background: #fafaf8; line-height: 1.6">
-        <h1>Téo Vidal — Irchi</h1>
+        <h1>Téo Vidal · Irchi</h1>
         <p>
-          Étudiant en BUT GEII à l'IUT de Montpellier-Sète, en route vers l'industrie du
-          semi-conducteur.
+          Étudiant en BUT GEII à l'IUT de Montpellier-Sète. Je cherche un stage, cap sur
+          l'industrie du semi-conducteur. Contact :
+          <a href="mailto:teo.vidal@etu.umontpellier.fr">teo.vidal@etu.umontpellier.fr</a>.
         </p>
         <p>
           Ce portfolio est une animation au défilement : il a besoin de JavaScript. Mes projets
@@ -81,7 +88,7 @@
         <h2>Mentions légales</h2>
         <p>
           Site personnel non commercial, édité et hébergé par Téo Vidal, sur un serveur
-          situé en France — [À COMPLÉTER : adresse postale] — [À COMPLÉTER : téléphone] —
+          situé en France. [À COMPLÉTER : adresse postale]. [À COMPLÉTER : téléphone].
           [À COMPLÉTER : e-mail]. Directeur de la publication : Téo Vidal. Trafic acheminé
           par Cloudflare, Inc., 101 Townsend St., San Francisco, CA 94107, États-Unis,
           +1 650 319 8930.

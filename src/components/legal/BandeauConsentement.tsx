@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router";
+import { Bouton } from "@/components/ui/Bouton";
 import { TEXTES_CONSENTEMENT, COOKIES } from "@/content/legal";
 import type { Choix } from "@/lib/consentement";
 import {
@@ -15,7 +16,7 @@ import {
    registre content/traceurs.ts est vide (voir l'en-tete de ce fichier).
 
    REGLE CNIL N°1, traduite en CSS : « Tout refuser » et « Tout accepter »
-   partagent la MEME constante de classes. Meme taille, meme bordure,
+   partagent la MEME variante de <Bouton> (secondaire). Meme taille, meme bordure,
    meme graisse, cote a cote. Il est impossible d'en mettre un en avant
    sans modifier les deux — c'est voulu. Pas de couleur « positive » sur
    « Accepter » : la palette n'a qu'un accent, et il est reserve au ★.
@@ -27,9 +28,6 @@ import {
    repondre (refuser ne doit rien couter, pas meme de devoir cliquer).
    Le choix « ne pas repondre » vaut refus : rien n'est charge.
    --------------------------------------------------------------------- */
-
-const BOUTON =
-  "border-ink text-ink hover:bg-ink hover:text-ground text-small min-h-11 border px-5 py-2 font-bold";
 
 export function BandeauConsentement() {
   const { choix, preferencesOuvertes } = useConsentement();
@@ -109,20 +107,16 @@ function ContenuBandeau({ choix, preferencesOuvertes }: ProprietesContenu) {
         )}
 
         <div className="flex flex-wrap gap-3">
-          <button type="button" className={BOUTON} onClick={() => enregistrer(choixUniforme(false))}>
+          <Bouton onClick={() => enregistrer(choixUniforme(false))}>
             {TEXTES_CONSENTEMENT.refuser}
-          </button>
-          <button type="button" className={BOUTON} onClick={() => enregistrer(choixUniforme(true))}>
+          </Bouton>
+          <Bouton onClick={() => enregistrer(choixUniforme(true))}>
             {TEXTES_CONSENTEMENT.accepter}
-          </button>
+          </Bouton>
           {detail ? (
-            <button
-              type="button"
-              className={BOUTON}
-              onClick={() => enregistrer({ ...choixUniforme(false), ...coches })}
-            >
+            <Bouton onClick={() => enregistrer({ ...choixUniforme(false), ...coches })}>
               {TEXTES_CONSENTEMENT.enregistrer}
-            </button>
+            </Bouton>
           ) : (
             <button
               type="button"

@@ -19,6 +19,7 @@ import type { Blocs } from "@/content/types";
 
 export const BLOCS_COMPETENCES: Blocs = {
   "09": {
+    titre: "Outils et langages",
     entrees: [
       {
         titre: "Embarqué et numérique",

@@ -1,5 +1,6 @@
 import { PageLegale } from "@/components/legal/PageLegale";
 import { BlocLegal } from "@/components/legal/BlocLegal";
+import { Bouton } from "@/components/ui/Bouton";
 import { CONFIDENTIALITE, COOKIES } from "@/content/legal";
 import { TRACEURS } from "@/content/traceurs";
 import { CONSENTEMENT_REQUIS, ouvrirPreferences } from "@/lib/consentement";
@@ -40,13 +41,9 @@ export function Confidentialite() {
           section={cookies}
           enfants={
             CONSENTEMENT_REQUIS && (
-              <button
-                type="button"
-                onClick={ouvrirPreferences}
-                className="border-ink text-ink hover:bg-ink hover:text-ground text-small mt-6 min-h-11 border px-5 py-2 font-bold"
-              >
+              <Bouton onClick={ouvrirPreferences} className="mt-6">
                 {COOKIES.gerer}
-              </button>
+              </Bouton>
             )
           }
         />

@@ -94,17 +94,17 @@ export function Panneau({ etape, bloc }: ProprietesPanneau) {
           {/* `data-insole` : la zone que le bloc 07 revele par clip-path.
               Les autres blocs ne s'en servent pas. */}
           <div data-insole="" className="md:col-start-1 md:row-start-1 md:self-end">
-            <p
-              data-ligne=""
-              className="text-mono font-mono flex flex-wrap items-center gap-3 uppercase"
-            >
-              <span className="text-ink">{etape.repere}</span>
+            {/* Le repere d'etape, en casse NORMALE (DESIGN.md §3) : un
+                surtitre en capitales espacees au-dessus de chaque titre est
+                le motif de gabarit par excellence. Le ★ n'est pas annonce
+                par une etiquette « moment fort » : le jaune passe DERRIERE
+                le numero. Seul usage du jaune, texte en encre par-dessus
+                (10,25:1), jamais de texte jaune (§10). */}
+            <p data-ligne="" className="text-mono font-mono flex flex-wrap items-center gap-3">
+              <span className={etape.fort ? "bg-litho text-ink px-1" : "text-ink"}>
+                {etape.repere}
+              </span>
               <span className="text-ink-soft">{etape.procede}</span>
-              {etape.fort && (
-                /* Seul usage autorise du jaune : fond de pastille, texte en
-                   encre par-dessus (10,25:1). Jamais du texte jaune. §10. */
-                <span className="bg-litho text-ink px-2 py-0.5">moment fort</span>
-              )}
               {/* Pastille de relecture : n'existe QU'EN DEVELOPPEMENT.
                   Vite remplace `import.meta.env.DEV` par `false` au build,
                   et le bloc entier disparait du code livre. */}

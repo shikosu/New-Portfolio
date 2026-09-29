@@ -15,16 +15,18 @@ import type { Blocs } from "@/content/types";
 
 export const BLOCS_EXPERIENCE: Blocs = {
   "07": {
+    titre: "Quatre stages, quatre métiers",
     titreDisplay: true,
     texte:
-      "Quatre PFMP pendant le Bac Pro CIEL, dans quatre métiers : réseau, cybersécurité, réparation électronique, développement. Le cursus était le masque ; ces expériences sont le motif.",
+      "Mes PFMP de Bac Pro CIEL : réseau, cybersécurité, réparation électronique et développement.",
     repere: "4 PFMP · 1 atelier électronique · 3 réseau et informatique",
     brouillon: true,
   },
   "08": {
+    titre: "Où j'ai travaillé",
     entrees: [
       {
-        titre: "Adagio.io — Onfocus SAS",
+        titre: "Adagio.io (Onfocus SAS)",
         repere: "PFMP 5",
         detail: "Intégration SQL, filtrage de bots en Go, présentation du travail en anglais.",
       },

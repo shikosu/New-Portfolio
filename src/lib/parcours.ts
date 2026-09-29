@@ -58,7 +58,7 @@ export const PARCOURS: readonly EtapeParcours[] = [
    --------------------------------------------------------------------- */
 export const ANNEXES: readonly Omit<EtapeParcours, "repere">[] = [
   { chemin: "/mentions-legales", libelle: "Mentions légales" },
-  { chemin: "/confidentialite", libelle: "Confidentialité et cookies" },
+  { chemin: "/confidentialite", libelle: "Confidentialité" },
 ] as const;
 
 type Chargeur = () => Promise<{ default: ComponentType }>;
